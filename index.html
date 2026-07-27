@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="bn" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a73e8">
+    <meta name="description" content="US BENGOL - কর্মচারী হাজিরা ও বেতন ব্যবস্থাপনা সিস্টেম">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>US BENGOL - হাজিরা ও বেতন ব্যবস্থাপনা</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a73e8'/><text x='50' y='65' text-anchor='middle' fill='white' font-size='40' font-weight='bold'>UB</text></svg>">
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts for Bangla typography in PDF and UI -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700&display=swap" rel="stylesheet">
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
+
+    <!-- Confirmation Modal -->
+    <div id="modal-confirm" class="modal-overlay" style="display:none;">
+        <div class="modal-content modal-sm">
+            <div class="modal-icon warning">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <h3 id="confirm-title">নিশ্চিত করুন</h3>
+            <p id="confirm-message">আপনি কি নিশ্চিত?</p>
+            <div class="modal-actions">
+                <button class="btn btn-outline" id="confirm-cancel">বাতিল</button>
+                <button class="btn btn-danger" id="confirm-ok">মুছুন</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Worker Form Modal -->
+    <div id="modal-worker" class="modal-overlay" style="display:none;">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3 id="worker-form-title">নতুন কর্মচারী যোগ করুন</h3>
+                <button class="modal-close" onclick="UI.closeModal('modal-worker')">&times;</button>
+            </div>
+            <form id="form-worker" class="modal-body">
+                <input type="hidden" id="worker-edit-id">
+                <div class="form-group">
+                    <label for="worker-name">পূর্ণ নাম *</label>
+                    <input type="text" id="worker-name" required placeholder="কর্মচারীর নাম লিখুন">
+                </div>
+                <div class="form-group">
+                    <label for="worker-mobile">মোবাইল নম্বর *</label>
+                    <input type="tel" id="worker-mobile" required placeholder="০১XXXXXXXXX">
+                </div>
+                <div class="form-group">
+                    <label for="worker-designation">পদবি *</label>
+                    <input type="text" id="worker-designation" required placeholder="যেমন: ইঞ্জিনিয়ার, হেলার">
+                </div>
+                <div class="form-group">
+                    <label for="worker-joining-date">যোগদানের তারিখ *</label>
+                    <input type="date" id="worker-joining-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="worker-photo">প্রোফাইল ছবি (ঐচ্ছিক)</label>
+                    <div class="photo-upload" id="photo-upload-area">
+                        <input type="file" id="worker-photo" accept="image/*" style="display:none;">
+                        <div id="photo-preview" class="photo-preview">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <span>ছবি আপলোড করুন</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="worker-type">কর্মচারীর ধরন *</label>
+                    <select id="worker-type" required>
+                        <option value="">নির্বাচন করুন</option>
+                        <option value="daily">হাজিরা ভিত্তিক (দৈনিক)</option>
+                        <option value="monthly">মাসিক বেতনভোগী</option>
+                    </select>
+                </div>
+                <div id="daily-wage-group" class="form-group" style="display:none;">
+                    <label for="worker-daily-wage">দৈনিক বেতন (BDT) *</label>
+                    <input type="number" id="worker-daily-wage" min="0" placeholder="যেমন: ১০০০">
+                </div>
+                <div id="monthly-salary-group" class="form-group" style="display:none;">
+                    <label for="worker-monthly-salary">মাসিক বেতন (BDT) *</label>
+                    <input type="number" id="worker-monthly-salary" min="0" placeholder="যেমন: ২৫০০০">
+                </div>
+                <div class="form-group">
+                    <label for="worker-overtime-rate">ওভারটাইম রেট (প্রতি ঘণ্টা/BDT)</label>
+                    <input type="number" id="worker-overtime-rate" min="0" placeholder="যেমন: ১৫০">
+                </div>
+                <div class="form-group">
+                    <label for="worker-status">স্ট্যাটাস</label>
+                    <select id="worker-status">
+                        <option value="active">সক্রিয়</option>
+                        <option value="inactive">নিষ্ক্রিয়</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="UI.closeModal('modal-worker')">বাতিল</button>
+                    <button type="submit" class="btn btn-primary" id="worker-submit-btn">সংরক্ষণ করুন</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payment Form Modal -->
+    <div id="modal-payment" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>পেমেন্ট যোগ করুন</h3>
+                <button class="modal-close" onclick="UI.closeModal('modal-payment')">&times;</button>
+            </div>
+            <form id="form-payment" class="modal-body">
+                <input type="hidden" id="payment-worker-id">
+                <div class="form-group">
+                    <label for="payment-worker-select">কর্মচারী *</label>
+                    <select id="payment-worker-select" required>
+                        <option value="">কর্মচারী নির্বাচন করুন</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="payment-date">তারিখ *</label>
+                    <input type="date" id="payment-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="payment-amount">পরিমাণ (BDT) *</label>
+                    <input type="number" id="payment-amount" min="1" required placeholder="পেমেন্ট পরিমাণ">
+                </div>
+                <div class="form-group">
+                    <label for="payment-notes">নোট</label>
+                    <textarea id="payment-notes" rows="2" placeholder="অতিরিক্ত তথ্য"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="UI.closeModal('modal-payment')">বাতিল</button>
+                    <button type="submit" class="btn btn-primary">পেমেন্ট সংরক্ষণ করুন</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Worker Detail Modal -->
+    <div id="modal-worker-detail" class="modal-overlay" style="display:none;">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3>কর্মচারী বিবরণ</h3>
+                <button class="modal-close" onclick="UI.closeModal('modal-worker-detail')">&times;</button>
+            </div>
+            <div id="worker-detail-content" class="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Attendance Detail Modal -->
+    <div id="modal-attendance-detail" class="modal-overlay" style="display:none;">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3>হাজিরা বিস্তারিত</h3>
+                <button class="modal-close" onclick="UI.closeModal('modal-attendance-detail')">&times;</button>
+            </div>
+            <div id="attendance-detail-content" class="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div id="modal-report" class="modal-overlay" style="display:none;">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3>রিপোর্ট</h3>
+                <button class="modal-close" onclick="UI.closeModal('modal-report')">&times;</button>
+            </div>
+            <div id="report-content" class="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- App Header -->
+    <header id="app-header">
+        <div class="header-left">
+            <div class="app-logo">
+                <svg width="32" height="32" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="currentColor" opacity="0.15"/><text x="50" y="65" text-anchor="middle" fill="currentColor" font-size="36" font-weight="bold">UB</text></svg>
+            </div>
+            <div class="header-title">
+                <h1>US BENGOL</h1>
+                <span class="header-subtitle">হাজিরা ও বেতন ব্যবস্থাপনা</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="icon-btn" id="btn-dark-mode" title="ডার্ক মোড">
+                <svg class="sun-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                <svg class="moon-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main id="app-main">
+
+        <!-- ==================== DASHBOARD PAGE ==================== -->
+        <section id="page-dashboard" class="page active">
+            <div class="page-content">
+                <div class="page-title-bar">
+                    <h2>ড্যাশবোর্ড</h2>
+                    <span class="today-date" id="dashboard-date"></span>
+                </div>
+                <div class="stats-grid" id="dashboard-stats">
+                    <!-- Filled by JS -->
+                </div>
+                <div class="section-card">
+                    <h3 class="section-title">আজকের হাজিরা সারসংক্ষেপ</h3>
+                    <div id="dashboard-attendance-summary" class="attendance-summary-cards">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+                <div class="section-card">
+                    <h3 class="section-title">সাম্প্রতিক কার্যক্রম</h3>
+                    <div id="dashboard-recent-activity" class="activity-list">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== WORKERS PAGE ==================== -->
+        <section id="page-workers" class="page">
+            <div class="page-content">
+                <div class="page-title-bar">
+                    <h2>কর্মচারী</h2>
+                    <span class="badge" id="worker-count-badge">০</span>
+                </div>
+                <div class="search-filter-bar">
+                    <div class="search-box">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="search-workers" placeholder="কর্মচারী খুঁজুন...">
+                    </div>
+                    <div class="filter-chips" id="worker-filters">
+                        <button class="chip active" data-filter="all">সকল</button>
+                        <button class="chip" data-filter="daily">দৈনিক</button>
+                        <button class="chip" data-filter="monthly">মাসিক</button>
+                        <button class="chip" data-filter="active">সক্রিয়</button>
+                        <button class="chip" data-filter="inactive">নিষ্ক্রিয়</button>
+                    </div>
+                </div>
+                <div id="workers-list" class="workers-list">
+                    <!-- Filled by JS -->
+                </div>
+                <div id="no-workers" class="empty-state" style="display:none;">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <h3>কোনো কর্মচারী পাওয়া যায়নি</h3>
+                    <p>নিচের "+" বোতামে ক্লিক করে নতুন কর্মচারী যোগ করুন</p>
+                </div>
+            </div>
+            <!-- Floating Add Button -->
+            <button class="fab" id="fab-add-worker" title="নতুন কর্মচারী যোগ করুন">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+        </section>
+
+        <!-- ==================== ATTENDANCE PAGE ==================== -->
+        <section id="page-attendance" class="page">
+            <div class="page-content">
+                <div class="page-title-bar">
+                    <h2>হাজিরা</h2>
+                    <div class="date-nav">
+                        <button class="icon-btn-sm" id="att-prev-day">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                        </button>
+                        <input type="date" id="attendance-date" class="date-input">
+                        <button class="icon-btn-sm" id="att-next-day">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div id="attendance-summary-bar" class="att-summary-bar">
+                    <!-- Filled by JS -->
+                </div>
+                <div id="attendance-list" class="attendance-list">
+                    <!-- Filled by JS -->
+                </div>
+                <div id="no-attendance-workers" class="empty-state" style="display:none;">
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    <h3>কোনো সক্রিয় কর্মচারী নেই</h3>
+                    <p>প্রথমে কর্মচারী যোগ করুন</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== PAYMENT PAGE ==================== -->
+        <section id="page-payment" class="page">
+            <div class="page-content">
+                <div class="page-title-bar">
+                    <h2>পেমেন্ট</h2>
+                    <button class="btn btn-sm btn-primary" id="btn-add-payment">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        পেমেন্ট
+                    </button>
+                </div>
+                <div class="payment-summary-cards" id="payment-summary">
+                    <!-- Filled by JS -->
+                </div>
+                <div class="search-filter-bar">
+                    <div class="search-box">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="search-payments" placeholder="কর্মচারী খুঁজুন...">
+                    </div>
+                </div>
+                <div id="payment-list" class="payment-list">
+                    <!-- Filled by JS -->
+                </div>
+                <div id="no-payments" class="empty-state" style="display:none;">
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    <h3>কোনো পেমেন্ট নেই</h3>
+                    <p>উপরের বোতামে ক্লিক করে পেমেন্ট যোগ করুন</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== REPORT PAGE ==================== -->
+        <section id="page-report" class="page">
+            <div class="page-content">
+                <div class="page-title-bar">
+                    <h2>রিপোর্ট</h2>
+                </div>
+                <div class="report-options">
+                    <div class="section-card report-card" id="report-individual">
+                        <div class="report-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        </div>
+                        <h3>ব্যক্তিগত রিপোর্ট</h3>
+                        <p>একজন কর্মচারীর সম্পূর্ণ রিপোর্ট তৈরি করুন</p>
+                        <div class="form-group">
+                            <select id="report-worker-select">
+                                <option value="">কর্মচারী নির্বাচন করুন</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>শুরুর তারিখ</label>
+                                <input type="month" id="report-start-month">
+                            </div>
+                            <div class="form-group">
+                                <label>শেষ তারিখ</label>
+                                <input type="month" id="report-end-month">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-block" id="btn-generate-individual-report">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            PDF রিপোর্ট তৈরি করুন
+                        </button>
+                    </div>
+                    <div class="section-card report-card" id="report-all">
+                        <div class="report-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
+                        <h3>সকল কর্মচারীর রিপোর্ট</h3>
+                        <p>সকল কর্মচারীর সারসংক্ষেপ PDF রিপোর্ট</p>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>মাস নির্বাচন</label>
+                                <input type="month" id="report-all-month">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-block" id="btn-generate-all-report">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            সকল PDF রিপোর্ট তৈরি করুন
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SETTINGS PAGE ==================== -->
+        <section id="page-settings" class="page">
+            <div class="page-content">
+                <div class="page-title-bar">
+                    <h2>সেটিংস</h2>
+                </div>
+                <div class="settings-list">
+                    <div class="section-card">
+                        <h3 class="section-title">থিম</h3>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-label">ডার্ক মোড</span>
+                                <span class="setting-desc">অন্ধকার থিম ব্যবহার করুন</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-dark-mode">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="section-card">
+                        <h3 class="section-title">ব্যাকআপ ও পুনরুদ্ধার</h3>
+                        <div class="setting-item clickable" id="btn-export-backup">
+                            <div class="setting-info">
+                                <span class="setting-label">ব্যাকআপ এক্সপোর্ট</span>
+                                <span class="setting-desc">সকল ডেটা JSON ফাইলে ডাউনলোড করুন</span>
+                            </div>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        </div>
+                        <div class="setting-item clickable" id="btn-import-backup">
+                            <div class="setting-info">
+                                <span class="setting-label">ব্যাকআপ ইম্পোর্ট</span>
+                                <span class="setting-desc">JSON ফাইল থেকে ডেটা পুনরুদ্ধার করুন</span>
+                            </div>
+                            <input type="file" id="import-file-input" accept=".json" style="display:none;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        </div>
+                    </div>
+                    <div class="section-card">
+                        <h3 class="section-title">ডেটা ব্যবস্থাপনা</h3>
+                        <div class="setting-item clickable danger" id="btn-reset-attendance">
+                            <div class="setting-info">
+                                <span class="setting-label">হাজিরা ডেটা মুছুন</span>
+                                <span class="setting-desc">সকল হাজিরা রেকর্ড মুছে ফেলুন</span>
+                            </div>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        </div>
+                        <div class="setting-item clickable danger" id="btn-reset-payments">
+                            <div class="setting-info">
+                                <span class="setting-label">পেমেন্ট ডেটা মুছুন</span>
+                                <span class="setting-desc">সকল পেমেন্ট রেকর্ড মুছে ফেলুন</span>
+                            </div>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        </div>
+                        <div class="setting-item clickable danger" id="btn-reset-all">
+                            <div class="setting-info">
+                                <span class="setting-label">সকল ডেটা মুছুন</span>
+                                <span class="setting-desc">সম্পূর্ণ অ্যাপ ডেটা মুছে ফেলুন</span>
+                            </div>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        </div>
+                    </div>
+                    <div class="section-card">
+                        <h3 class="section-title">অ্যাপ তথ্য</h3>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-label">ভার্সন</span>
+                                <span class="setting-desc">1.0.0</span>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-label">ডেটা স্টোরেজ</span>
+                                <span class="setting-desc" id="storage-usage">গণনা করা হচ্ছে...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Calendar Modal (for worker detail) -->
+    <div id="modal-calendar" class="modal-overlay" style="display:none;">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3 id="calendar-title">মাসিক হাজিরা ক্যালেন্ডার</h3>
+                <button class="modal-close" onclick="UI.closeModal('modal-calendar')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="calendar-nav">
+                    <button class="icon-btn-sm" id="cal-prev-month">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                    </button>
+                    <span id="cal-month-year" class="cal-month-label"></span>
+                    <button class="icon-btn-sm" id="cal-next-month">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                </div>
+                <div class="calendar-grid" id="calendar-grid">
+                    <!-- Filled by JS -->
+                </div>
+                <div class="calendar-legend">
+                    <span class="legend-item"><span class="legend-dot present"></span>উপস্থিত</span>
+                    <span class="legend-item"><span class="legend-dot halfday"></span>আধা দিন</span>
+                    <span class="legend-item"><span class="legend-dot absent"></span>অনুপস্থিত</span>
+                    <span class="legend-item"><span class="legend-dot paid-leave"></span>পেইড লিভ</span>
+                    <span class="legend-item"><span class="legend-dot unpaid-leave"></span>আনপেইড লিভ</span>
+                </div>
+                <div id="calendar-summary" class="calendar-summary"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav id="bottom-nav">
+        <button class="nav-item active" data-page="dashboard">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <span>ড্যাশবোর্ড</span>
+        </button>
+        <button class="nav-item" data-page="workers">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span>কর্মচারী</span>
+        </button>
+        <button class="nav-item" data-page="attendance">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>
+            <span>হাজিরা</span>
+        </button>
+        <button class="nav-item" data-page="payment">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            <span>পেমেন্ট</span>
+        </button>
+        <button class="nav-item" data-page="report">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <span>রিপোর্ট</span>
+        </button>
+        <button class="nav-item" data-page="settings">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>সেটিংস</span>
+        </button>
+    </nav>
+
+    <script src="app.js"></script>
+</body>
+</html>
