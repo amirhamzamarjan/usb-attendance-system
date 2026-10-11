@@ -2037,7 +2037,11 @@ const Reports = {
                     pageBreak: 'auto',
                     rowPageBreak: 'avoid',
                     showHead: 'everyPage',
-                    willDrawPage: () => { this._stampPadBg(doc); }
+                    willDrawPage: (data) => {
+                        if (data.pageNumber > 1) {
+                            this._stampPadBg(doc);
+                        }
+                    }
                 });
                 y = doc.lastAutoTable.finalY + 8;
             } else {
@@ -2090,7 +2094,11 @@ const Reports = {
                     pageBreak: 'auto',
                     rowPageBreak: 'avoid',
                     showHead: 'everyPage',
-                    willDrawPage: () => { this._stampPadBg(doc); }
+                    willDrawPage: (data) => {
+                        if (data.pageNumber > 1) {
+                            this._stampPadBg(doc);
+                        }
+                    }
                 });
                 y = doc.lastAutoTable.finalY + 10;
             } else {
@@ -2256,7 +2264,11 @@ const Reports = {
                 pageBreak: 'auto',
                 rowPageBreak: 'avoid',
                 showHead: 'everyPage',
-                willDrawPage: () => { this._stampPadBg(doc); }
+                willDrawPage: (data) => {
+                    if (data.pageNumber > 1) {
+                        this._stampPadBg(doc);
+                    }
+                }
             });
             y = doc.lastAutoTable.finalY + 10;
 
@@ -2345,20 +2357,36 @@ const Reports = {
         y += 6;
 
         // 3. Recipient Information Box
-        if (docData.recipient && (docData.recipient.name || docData.recipient.org)) {
+        if (docData.recipient && (docData.recipient.name || docData.recipient.org || docData.recipient.address || docData.recipient.phone)) {
+            let rLines = 1;
+            if (docData.recipient.org) rLines++;
+            if (docData.recipient.address) rLines++;
+            const rBoxH = Math.max(16, rLines * 4.5 + 4);
+
             doc.setFillColor(248, 250, 252);
             doc.setDrawColor(220, 226, 235);
-            doc.roundedRect(leftX, y, contentW, 18, 2, 2, 'FD');
+            doc.roundedRect(leftX, y, contentW, rBoxH, 2, 2, 'FD');
 
             doc.setFontSize(8.5);
             doc.setTextColor(40, 40, 40);
             this._setFont(doc, 'bold');
-            doc.text(`To / Attention: ${docData.recipient.name || ''}`, leftX + 4, y + 5);
+            const toLabel = docData.recipient.name ? `To / Attention: ${docData.recipient.name}` : (docData.recipient.org ? `To / Attention: ${docData.recipient.org}` : 'To / Attention:');
+            doc.text(toLabel, leftX + 4, y + 5);
+
             this._setFont(doc, 'normal');
-            if (docData.recipient.org) doc.text(docData.recipient.org, leftX + 4, y + 9);
-            if (docData.recipient.address) doc.text(docData.recipient.address, leftX + 4, y + 13);
-            if (docData.recipient.phone) doc.text(`Contact: ${docData.recipient.phone}`, rightX - 4, y + 5, { align: 'right' });
-            y += 22;
+            let ry = y + 5;
+            if (docData.recipient.name && docData.recipient.org) {
+                ry += 4;
+                doc.text(docData.recipient.org, leftX + 4, ry);
+            }
+            if (docData.recipient.address) {
+                ry += 4;
+                doc.text(docData.recipient.address, leftX + 4, ry);
+            }
+            if (docData.recipient.phone) {
+                doc.text(`Contact: ${docData.recipient.phone}`, rightX - 4, y + 5, { align: 'right' });
+            }
+            y += rBoxH + 4;
         }
 
         // 4. Subject
@@ -2366,8 +2394,9 @@ const Reports = {
             this._setFont(doc, 'bold');
             doc.setFontSize(9.5);
             doc.setTextColor(27, 54, 93);
-            doc.text(`Subject: ${docData.subject}`, leftX, y);
-            y += 6;
+            const splitSub = doc.splitTextToSize(`Subject: ${docData.subject}`, contentW);
+            doc.text(splitSub, leftX, y);
+            y += splitSub.length * 4.8 + 2;
         }
 
         // 5. Body Text
@@ -2382,6 +2411,12 @@ const Reports = {
 
         // 6. Dynamic Items Table (with auto-overflow, repeated headers)
         if (docData.items && docData.items.length > 0) {
+            if (y > 220) {
+                doc.addPage();
+                this._stampPadBg(doc);
+                y = 48;
+            }
+
             const tableHeaders = ['SL', 'ITEM DESCRIPTION', 'QTY', 'UNIT PRICE (BDT)', 'TOTAL (BDT)'];
             const tableRows = docData.items.map((item, idx) => [
                 String(idx + 1),
@@ -2425,8 +2460,10 @@ const Reports = {
                 pageBreak: 'auto',
                 rowPageBreak: 'avoid',
                 showHead: 'everyPage',
-                willDrawPage: () => {
-                    this._stampPadBg(doc);
+                willDrawPage: (data) => {
+                    if (data.pageNumber > 1) {
+                        this._stampPadBg(doc);
+                    }
                 }
             });
 
