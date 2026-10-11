@@ -372,6 +372,22 @@
                 <div class="stats-grid" id="dashboard-stats">
                     <!-- Filled by JS -->
                 </div>
+                <!-- Quick Quotation & Letterhead Banner -->
+                <div class="section-card" style="background: linear-gradient(135deg, rgba(0,136,82,0.06) 0%, rgba(27,54,93,0.08) 100%); border: 1.5px solid rgba(0,136,82,0.22); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; padding: 16px 18px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(0,136,82,0.14); color: #008852; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        </div>
+                        <div>
+                            <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--text-primary);">কোটেশন ও প্যাড জেনারেটর</h3>
+                            <span style="font-size: 12px; color: var(--text-secondary);">US BENGOL মূল লেটারহেডে কোটেশন, বিল ও চিঠি তৈরি করে PDF ডাউনলোড করুন</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="App.navigateTo('quotation')" style="background:#008852; border-color:#008852; font-weight:600; padding:8px 18px;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        কোটেশন তৈরি করুন
+                    </button>
+                </div>
                 <div class="section-card">
                     <h3 class="section-title">আজকের হাজিরা সারসংক্ষেপ</h3>
                     <div id="dashboard-attendance-summary" class="attendance-summary-cards">
@@ -477,6 +493,222 @@
                     <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
                     <h3>কোনো পেমেন্ট নেই</h3>
                     <p>উপরের বোতামে ক্লিক করে পেমেন্ট যোগ করুন</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== QUOTATION & LETTERHEAD BUILDER PAGE ==================== -->
+        <section id="page-quotation" class="page">
+            <div class="page-content">
+                <div class="page-title-bar">
+                    <div>
+                        <h2>কোটেশন ও প্যাড জেনারেটর</h2>
+                        <span style="font-size:12px; color:var(--text-secondary);">US BENGOL মূল লেটারহেডে কোটেশন, বিল ও অফিসিয়াল চিঠি তৈরি করুন</span>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn btn-sm btn-outline" id="btn-pq-new" type="button">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            নতুন তৈরি করুন
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Main Quotation Generator Form Card -->
+                <form id="form-page-quotation" class="section-card" style="margin-bottom:24px;">
+                    <input type="hidden" id="pq-doc-id">
+
+                    <!-- Header Bar Inside Form -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-light); padding-bottom:12px; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:38px; height:38px; border-radius:8px; background:rgba(0,136,82,0.12); color:#008852; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                            </div>
+                            <div>
+                                <h3 style="margin:0; font-size:16px; font-weight:700;">ডকুমেন্টের তথ্য ও বিবরণ</h3>
+                                <span style="font-size:11px; color:var(--text-secondary);">তথ্য দিয়ে নিচে "PDF জেনারেট ও সেভ করুন" বোতামে ক্লিক করুন</span>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button type="button" class="btn btn-sm btn-outline" id="btn-pq-preview-top">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                লাইভ প্রিভিউ
+                            </button>
+                            <button type="submit" class="btn btn-sm btn-primary" style="background:#008852; border-color:#008852;">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                PDF জেনারেট ও সেভ
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Row 1: Document Type, Ref No, Date -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pq-doc-type">ডকুমেন্টের ধরন *</label>
+                            <select id="pq-doc-type" required>
+                                <option value="quotation">বাণিজ্যিক দরপত্র (Quotation)</option>
+                                <option value="invoice">বিল / ইনভয়েস (Invoice)</option>
+                                <option value="letter">অফিসিয়াল প্যাড চিঠি (Official Letter)</option>
+                                <option value="notice">অফিসিয়াল নোটিশ (Notice)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="pq-doc-ref">স্মারক / রেফারেন্স নং *</label>
+                            <input type="text" id="pq-doc-ref" required placeholder="UB/QT/2026/001">
+                        </div>
+                        <div class="form-group">
+                            <label for="pq-doc-date">তারিখ *</label>
+                            <input type="date" id="pq-doc-date" required>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Title & Subtitle -->
+                    <div class="form-row">
+                        <div class="form-group" style="flex:2;">
+                            <label for="pq-doc-title">শিরোনাম (Document Title) *</label>
+                            <input type="text" id="pq-doc-title" required placeholder="COMMERCIAL QUOTATION / বাণিজ্যিক দরপত্র">
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label for="pq-doc-subtitle">উপ-শিরোনাম (Subtitle)</label>
+                            <input type="text" id="pq-doc-subtitle" placeholder="Metal, Electrical & Gas Supply Solutions">
+                        </div>
+                    </div>
+
+                    <!-- Recipient Information Card -->
+                    <div style="background:var(--bg-tertiary); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px; margin-bottom:16px;">
+                        <div style="font-weight:700; font-size:13px; margin-bottom:10px; color:var(--text-primary); display:flex; align-items:center; gap:6px;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            প্রাপকের তথ্য (Recipient / Customer Details)
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="pq-recipient-name">প্রাপকের নাম / পদবি</label>
+                                <input type="text" id="pq-recipient-name" placeholder="যেমন: জনাব মোহাম্মদ মোস্তফা কামাল (প্রজেক্ট ডিরেক্টর)">
+                            </div>
+                            <div class="form-group">
+                                <label for="pq-recipient-org">কোম্পানি / প্রতিষ্ঠান</label>
+                                <input type="text" id="pq-recipient-org" placeholder="যেমন: মেঘনা টেক্সটাইল অ্যান্ড স্টিল লিমিটেড">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="pq-recipient-address">ঠিকানা</label>
+                                <input type="text" id="pq-recipient-address" placeholder="যেমন: প্লট ৪২, সিইপিজেড শিল্প এলাকা, চট্টগ্রাম">
+                            </div>
+                            <div class="form-group">
+                                <label for="pq-recipient-phone">মোবাইল নম্বর / ইমেইল</label>
+                                <input type="text" id="pq-recipient-phone" placeholder="যেমন: +৮৮০ ১৭১১ ২৩৪৫৬৭">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Subject & Body Description -->
+                    <div class="form-group">
+                        <label for="pq-doc-subject">বিষয় (Subject)</label>
+                        <input type="text" id="pq-doc-subject" placeholder="যেমন: কারখানা আধুনিকায়ন প্রকল্পের জন্য মেটাল ও ইলেকট্রিক সামগ্রী সরবরাহ দরপত্র">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pq-doc-body">মূল বক্তব্য / চিঠির অংশ (Body Description)</label>
+                        <textarea id="pq-doc-body" rows="3" placeholder="সম্মানিত মহোদয়, আপনার চাহিদামাফিক মালামালের বিস্তারিত বিবরণ এবং সর্বনিম্ন মূল্যতালিকা নিচে উপস্থাপন করছি..."></textarea>
+                    </div>
+
+                    <!-- Line Items Table Section -->
+                    <div style="background:var(--card-bg); border:1.5px solid var(--border); border-radius:var(--radius-md); padding:16px; margin-bottom:16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <div>
+                                <h4 style="margin:0; font-size:14px; font-weight:700;">পণ্য ও সেবা তালিকা (Line Items)</h4>
+                                <span style="font-size:11px; color:var(--text-secondary);">পণ্যের বিবরণ, পরিমাণ ও দর দিলে মোট স্বয়ংক্রিয়ভাবে হিসাব হবে</span>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline" id="btn-pq-add-item">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                + আইটেম যোগ করুন
+                            </button>
+                        </div>
+
+                        <div class="pq-items-header" style="display:grid; grid-template-columns: 2fr 75px 65px 95px 105px 36px; gap:6px; padding:6px 8px; font-size:11px; font-weight:700; color:var(--text-secondary); background:var(--bg-secondary); border-radius:4px; margin-bottom:6px;">
+                            <span>বিবরণ (Description) *</span>
+                            <span style="text-align:center;">পরিমাণ *</span>
+                            <span style="text-align:center;">একক</span>
+                            <span style="text-align:right;">দর (BDT) *</span>
+                            <span style="text-align:right;">মোট (BDT)</span>
+                            <span></span>
+                        </div>
+
+                        <div id="pq-items-container" class="doc-items-table-wrapper">
+                            <!-- Dynamic items injected here -->
+                        </div>
+
+                        <!-- Subtotal, Discount, VAT, Grand Total -->
+                        <div style="display:flex; justify-content:flex-end; margin-top:14px;">
+                            <div style="width:300px; background:var(--bg-secondary); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px;">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;">
+                                    <span>উপ-মোট (Subtotal):</span>
+                                    <strong id="pq-calc-subtotal">০.০০ BDT</strong>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px;">
+                                    <span>ছাড় / ডিসকাউন্ট (BDT):</span>
+                                    <input type="number" id="pq-discount" min="0" value="0" style="width:110px; padding:4px 8px; font-size:13px; text-align:right;">
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px;">
+                                    <span>ভ্যাট / ট্যাক্স (BDT):</span>
+                                    <input type="number" id="pq-vat" min="0" value="0" style="width:110px; padding:4px 8px; font-size:13px; text-align:right;">
+                                </div>
+                                <div style="display:flex; justify-content:space-between; padding-top:8px; border-top:2px solid #008852; font-size:15px; color:#1b365d; font-weight:800;">
+                                    <span>সর্বমোট (Grand Total):</span>
+                                    <span id="pq-calc-grand-total">০.০০ BDT</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Terms & Conditions -->
+                    <div class="form-group">
+                        <label for="pq-doc-notes">শর্তাবলী / বিশেষ নিয়ম (Terms & Conditions)</label>
+                        <textarea id="pq-doc-notes" rows="3" placeholder="১. এই দরপত্রের মেয়াদ ইস্যু তারিখ হতে ৩০ দিন পর্যন্ত বলবৎ থাকবে।&#10;২. মালামাল সাইটে পৌঁছানোর পরিবহন খরচ কোম্পানি বহন করবে।&#10;৩. কার্যাদেশ প্রাপ্তির ১৫ কার্যদিবসের মধ্যে সরবরাহ সম্পন্ন হবে।&#10;৪. পরিশোধের শর্তাবলী: ৫০% অগ্রিম এবং অবশিষ্ট ৫০% মালামাল বুঝে পাওয়ার পর চেক মারফত।"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pq-prepared-by">প্রস্তুতকারক (Prepared By)</label>
+                            <input type="text" id="pq-prepared-by" placeholder="ইঞ্জিনিয়ার মারজান (বিক্রয় ও প্রকল্প)">
+                        </div>
+                        <div class="form-group">
+                            <label for="pq-authorized-by">অনুমোদনকারী (Authorized Signatory)</label>
+                            <input type="text" id="pq-authorized-by" placeholder="ব্যবস্থাপনা পরিচালক, US BENGOL">
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons at bottom of form -->
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; padding-top:16px; border-top:1px solid var(--border-light); flex-wrap:wrap;">
+                        <button type="button" class="btn btn-outline" id="btn-pq-reset">
+                            রিসেট
+                        </button>
+                        <button type="button" class="btn btn-outline" id="btn-pq-save-only">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                            খসড়া সেভ করুন
+                        </button>
+                        <button type="button" class="btn btn-outline" id="btn-pq-preview-bottom">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            লাইভ প্রিভিউ
+                        </button>
+                        <button type="submit" class="btn btn-primary" style="background:#008852; border-color:#008852; padding:10px 22px; font-weight:700; font-size:14px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            PDF জেনারেট ও সেভ করুন
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Saved Quotations & Documents List Card -->
+                <div class="section-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                        <div>
+                            <h3 class="section-title" style="margin:0;">সংরক্ষিত কোটেশন ও প্যাডসমূহ</h3>
+                            <span style="font-size:12px; color:var(--text-secondary);">পূর্বে তৈরি করা কোটেশন ও ডকুমেন্টসমূহ</span>
+                        </div>
+                    </div>
+                    <div id="pq-saved-list-container">
+                        <!-- Loaded dynamically -->
+                    </div>
                 </div>
             </div>
         </section>
@@ -690,6 +922,10 @@
         <button class="nav-item" data-page="payment">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
             <span>পেমেন্ট</span>
+        </button>
+        <button class="nav-item" data-page="quotation">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <span>কোটেশন</span>
         </button>
         <button class="nav-item" data-page="report">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>

@@ -2539,6 +2539,7 @@ const CompanyDocuments = {
         this.bindEvents();
         this.seedSamplesIfEmpty();
         this.renderList();
+        this.renderSavedList();
     },
 
     seedSamplesIfEmpty() {
@@ -2622,17 +2623,60 @@ const CompanyDocuments = {
             if (this._currentDoc) Reports.generateDocumentPDF(this._currentDoc);
         });
 
-        // Discount & VAT live changes
+        // Modal Discount & VAT live changes
         const discInput = document.getElementById('doc-discount');
         if (discInput) discInput.addEventListener('input', () => this.calculateTotals());
         const vatInput = document.getElementById('doc-vat');
         if (vatInput) vatInput.addEventListener('input', () => this.calculateTotals());
 
-        // Type change auto title
+        // Modal Type change auto title
         const typeSelect = document.getElementById('doc-type');
         if (typeSelect) {
             typeSelect.addEventListener('change', (e) => {
                 const titleInput = document.getElementById('doc-title');
+                const t = e.target.value;
+                if (t === 'quotation') titleInput.value = 'COMMERCIAL QUOTATION / বাণিজ্যিক দরপত্র';
+                else if (t === 'invoice') titleInput.value = 'OFFICIAL INVOICE / চালান ও বিল';
+                else if (t === 'letter') titleInput.value = 'OFFICIAL LETTER / অফিসিয়াল পত্র';
+                else if (t === 'notice') titleInput.value = 'OFFICIAL NOTICE / নোটিশ';
+            });
+        }
+
+        // ==================== Dedicated Quotation Page Events (#page-quotation) ====================
+        const pageForm = document.getElementById('form-page-quotation');
+        if (pageForm) {
+            pageForm.addEventListener('submit', (e) => this.saveAndGeneratePage(e));
+        }
+
+        const btnPqNew = document.getElementById('btn-pq-new');
+        if (btnPqNew) btnPqNew.addEventListener('click', () => this.resetPageForm());
+
+        const btnPqReset = document.getElementById('btn-pq-reset');
+        if (btnPqReset) btnPqReset.addEventListener('click', () => this.resetPageForm());
+
+        const btnPqSaveOnly = document.getElementById('btn-pq-save-only');
+        if (btnPqSaveOnly) btnPqSaveOnly.addEventListener('click', () => this.savePageOnly());
+
+        const btnPqPreviewTop = document.getElementById('btn-pq-preview-top');
+        if (btnPqPreviewTop) btnPqPreviewTop.addEventListener('click', () => this.previewPageForm());
+
+        const btnPqPreviewBottom = document.getElementById('btn-pq-preview-bottom');
+        if (btnPqPreviewBottom) btnPqPreviewBottom.addEventListener('click', () => this.previewPageForm());
+
+        const btnPqAddItem = document.getElementById('btn-pq-add-item');
+        if (btnPqAddItem) btnPqAddItem.addEventListener('click', () => this.addPageItemRow());
+
+        // Page Discount & VAT live calculation
+        const pqDiscInput = document.getElementById('pq-discount');
+        if (pqDiscInput) pqDiscInput.addEventListener('input', () => this.calculatePageTotals());
+        const pqVatInput = document.getElementById('pq-vat');
+        if (pqVatInput) pqVatInput.addEventListener('input', () => this.calculatePageTotals());
+
+        // Page Type change auto title
+        const pqTypeSelect = document.getElementById('pq-doc-type');
+        if (pqTypeSelect) {
+            pqTypeSelect.addEventListener('change', (e) => {
+                const titleInput = document.getElementById('pq-doc-title');
                 const t = e.target.value;
                 if (t === 'quotation') titleInput.value = 'COMMERCIAL QUOTATION / বাণিজ্যিক দরপত্র';
                 else if (t === 'invoice') titleInput.value = 'OFFICIAL INVOICE / চালান ও বিল';
@@ -3033,6 +3077,358 @@ const CompanyDocuments = {
         if (doc) Reports.generateDocumentPDF(doc);
     },
 
+    _escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    },
+
+    renderPage() {
+        const refInput = document.getElementById('pq-doc-ref');
+        if (refInput && !refInput.value.trim()) {
+            refInput.value = `UB/QT/${new Date().getFullYear()}/${String(Math.floor(Math.random() * 900) + 100)}`;
+        }
+
+        const dateInput = document.getElementById('pq-doc-date');
+        if (dateInput && !dateInput.value) {
+            dateInput.value = Utils.getToday();
+        }
+
+        const container = document.getElementById('pq-items-container');
+        if (container && container.children.length === 0) {
+            this.addPageItemRow();
+            this.addPageItemRow();
+        }
+
+        this.calculatePageTotals();
+        this.renderSavedList();
+    },
+
+    resetPageForm() {
+        const form = document.getElementById('form-page-quotation');
+        if (!form) return;
+        form.reset();
+
+        document.getElementById('pq-doc-id').value = '';
+        document.getElementById('pq-doc-type').value = 'quotation';
+        document.getElementById('pq-doc-ref').value = `UB/QT/${new Date().getFullYear()}/${String(Math.floor(Math.random() * 900) + 100)}`;
+        document.getElementById('pq-doc-date').value = Utils.getToday();
+        document.getElementById('pq-doc-title').value = 'COMMERCIAL QUOTATION / বাণিজ্যিক দরপত্র';
+        document.getElementById('pq-doc-subtitle').value = 'Metal, Electrical & Gas Supply Solutions';
+        document.getElementById('pq-recipient-name').value = '';
+        document.getElementById('pq-recipient-org').value = '';
+        document.getElementById('pq-recipient-address').value = '';
+        document.getElementById('pq-recipient-phone').value = '';
+        document.getElementById('pq-doc-subject').value = '';
+        document.getElementById('pq-doc-body').value = '';
+        document.getElementById('pq-discount').value = 0;
+        document.getElementById('pq-vat').value = 0;
+        document.getElementById('pq-doc-notes').value = '১. এই দরপত্রের মেয়াদ ইস্যু তারিখ হতে ৩০ দিন পর্যন্ত বলবৎ থাকবে।\n২. মালামাল চট্টগ্রাম সাইটে পৌঁছানোর পরিবহন খরচ কোম্পানি বহন করবে।\n৩. কার্যাদেশ প্রাপ্তির ১৫ কার্যদিবসের মধ্যে সরবরাহ সম্পন্ন হবে।\n৪. পরিশোধের শর্তাবলী: ৫০% অগ্রিম এবং অবশিষ্ট ৫০% মালামাল বুঝে পাওয়ার পর চেক মারফত।';
+        document.getElementById('pq-prepared-by').value = 'ইঞ্জিনিয়ার মারজান (বিক্রয় ও প্রকল্প)';
+        document.getElementById('pq-authorized-by').value = 'ব্যবস্থাপনা পরিচালক, US BENGOL';
+
+        const container = document.getElementById('pq-items-container');
+        if (container) {
+            container.innerHTML = '';
+            this.addPageItemRow();
+            this.addPageItemRow();
+        }
+        this.calculatePageTotals();
+
+        const formCard = document.getElementById('form-page-quotation');
+        if (formCard) formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        UI.toast('নতুন কোটেশন ফর্ম প্রস্তুত করা হয়েছে', 'info');
+    },
+
+    addPageItemRow(item = null) {
+        const container = document.getElementById('pq-items-container');
+        if (!container) return;
+
+        const row = document.createElement('div');
+        row.className = 'pq-item-row';
+        row.innerHTML = `
+            <div>
+                <input type="text" class="pq-item-desc" placeholder="পণ্যের বিবরণ *" value="${item ? (this._escapeHtml(item.desc) || '') : ''}" required style="width:100%; padding:7px 9px; font-size:12.5px;">
+            </div>
+            <div>
+                <input type="number" class="pq-item-qty" placeholder="পরিমাণ" value="${item ? (item.qty || 1) : 1}" min="0" step="any" required style="width:100%; padding:7px 6px; font-size:12.5px; text-align:center;">
+            </div>
+            <div>
+                <input type="text" class="pq-item-unit" placeholder="একক" value="${item ? (this._escapeHtml(item.unit) || 'Pcs') : 'Pcs'}" style="width:100%; padding:7px 6px; font-size:12.5px; text-align:center;">
+            </div>
+            <div>
+                <input type="number" class="pq-item-rate" placeholder="দর" value="${item ? (item.rate || 0) : 0}" min="0" step="any" required style="width:100%; padding:7px 8px; font-size:12.5px; text-align:right;">
+            </div>
+            <div style="text-align:right; font-weight:600; font-size:13px; color:var(--text-primary);">
+                <span class="pq-item-total-display">0.00</span>
+            </div>
+            <div style="text-align:center;">
+                <button type="button" class="btn-remove-pq-row" title="আইটেম মুছুন" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:18px; line-height:1; padding:2px 4px;">&times;</button>
+            </div>
+        `;
+
+        const qtyInput = row.querySelector('.pq-item-qty');
+        const rateInput = row.querySelector('.pq-item-rate');
+        const updateRowTotal = () => {
+            const q = parseFloat(qtyInput.value) || 0;
+            const r = parseFloat(rateInput.value) || 0;
+            const tot = q * r;
+            row.querySelector('.pq-item-total-display').textContent = tot.toLocaleString('en-US', { minimumFractionDigits: 2 });
+            this.calculatePageTotals();
+        };
+
+        qtyInput.addEventListener('input', updateRowTotal);
+        rateInput.addEventListener('input', updateRowTotal);
+
+        row.querySelector('.btn-remove-pq-row').addEventListener('click', () => {
+            row.remove();
+            this.calculatePageTotals();
+        });
+
+        container.appendChild(row);
+        updateRowTotal();
+    },
+
+    calculatePageTotals() {
+        const rows = document.querySelectorAll('#pq-items-container .pq-item-row');
+        let subtotal = 0;
+        rows.forEach(r => {
+            const q = parseFloat(r.querySelector('.pq-item-qty').value) || 0;
+            const rt = parseFloat(r.querySelector('.pq-item-rate').value) || 0;
+            subtotal += (q * rt);
+        });
+
+        const disc = parseFloat(document.getElementById('pq-discount')?.value) || 0;
+        const vat = parseFloat(document.getElementById('pq-vat')?.value) || 0;
+        const grandTotal = Math.max(0, subtotal + vat - disc);
+
+        const subEl = document.getElementById('pq-calc-subtotal');
+        if (subEl) subEl.textContent = `${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })} BDT`;
+
+        const grandEl = document.getElementById('pq-calc-grand-total');
+        if (grandEl) grandEl.textContent = `${grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })} BDT`;
+    },
+
+    _getPageFormData() {
+        const id = document.getElementById('pq-doc-id').value;
+        const items = [];
+        document.querySelectorAll('#pq-items-container .pq-item-row').forEach(r => {
+            const desc = r.querySelector('.pq-item-desc').value.trim();
+            const qty = parseFloat(r.querySelector('.pq-item-qty').value) || 0;
+            const unit = r.querySelector('.pq-item-unit').value.trim();
+            const rate = parseFloat(r.querySelector('.pq-item-rate').value) || 0;
+            if (desc) {
+                items.push({ desc, qty, unit, rate, total: qty * rate });
+            }
+        });
+
+        return {
+            id: id || undefined,
+            type: document.getElementById('pq-doc-type').value,
+            refNo: document.getElementById('pq-doc-ref').value.trim() || `UB/QT/${new Date().getFullYear()}/001`,
+            date: document.getElementById('pq-doc-date').value || Utils.getToday(),
+            title: document.getElementById('pq-doc-title').value.trim() || 'COMMERCIAL QUOTATION / বাণিজ্যিক দরপত্র',
+            subtitle: document.getElementById('pq-doc-subtitle').value.trim(),
+            recipient: {
+                name: document.getElementById('pq-recipient-name').value.trim(),
+                org: document.getElementById('pq-recipient-org').value.trim(),
+                address: document.getElementById('pq-recipient-address').value.trim(),
+                phone: document.getElementById('pq-recipient-phone').value.trim()
+            },
+            subject: document.getElementById('pq-doc-subject').value.trim(),
+            body: document.getElementById('pq-doc-body').value.trim(),
+            items,
+            discount: parseFloat(document.getElementById('pq-discount').value) || 0,
+            vat: parseFloat(document.getElementById('pq-vat').value) || 0,
+            notes: document.getElementById('pq-doc-notes').value.trim(),
+            preparedBy: document.getElementById('pq-prepared-by').value.trim(),
+            authorizedBy: document.getElementById('pq-authorized-by').value.trim()
+        };
+    },
+
+    saveAndGeneratePage(e) {
+        if (e) e.preventDefault();
+        const data = this._getPageFormData();
+        if (!data.refNo) {
+            UI.toast('দয়া করে রেফারেন্স নম্বর দিন', 'warning');
+            return;
+        }
+
+        let savedDoc;
+        if (data.id) {
+            savedDoc = DB.updateDocument(data.id, data);
+            UI.toast('কোটেশন সংরক্ষিত হয়েছে! PDF ডাউনলোড হচ্ছে...', 'success');
+        } else {
+            savedDoc = DB.addDocument(data);
+            document.getElementById('pq-doc-id').value = savedDoc.id;
+            UI.toast('নতুন কোটেশন সংরক্ষিত হয়েছে! PDF ডাউনলোড হচ্ছে...', 'success');
+        }
+
+        this.renderSavedList();
+        this.renderList();
+
+        // Direct PDF generation and download on original US BENGOL letterhead
+        Reports.generateDocumentPDF(savedDoc);
+    },
+
+    savePageOnly() {
+        const data = this._getPageFormData();
+        if (!data.refNo) {
+            UI.toast('দয়া করে রেফারেন্স নম্বর দিন', 'warning');
+            return;
+        }
+
+        if (data.id) {
+            DB.updateDocument(data.id, data);
+            UI.toast('কোটেশন সফলভাবে আপডেট হয়েছে!', 'success');
+        } else {
+            const saved = DB.addDocument(data);
+            document.getElementById('pq-doc-id').value = saved.id;
+            UI.toast('কোটেশন খসড়া সংরক্ষিত হয়েছে!', 'success');
+        }
+
+        this.renderSavedList();
+        this.renderList();
+    },
+
+    previewPageForm() {
+        const data = this._getPageFormData();
+        this.previewDocument(data);
+    },
+
+    loadIntoPageForm(id) {
+        const doc = DB.getDocument(id);
+        if (!doc) {
+            UI.toast('ডকুমেন্ট পাওয়া যায়নি!', 'error');
+            return;
+        }
+
+        // Switch to quotation page if not currently active
+        if (App.currentPage !== 'quotation') {
+            App.navigateTo('quotation');
+        }
+
+        document.getElementById('pq-doc-id').value = doc.id;
+        document.getElementById('pq-doc-type').value = doc.type || 'quotation';
+        document.getElementById('pq-doc-ref').value = doc.refNo || '';
+        document.getElementById('pq-doc-date').value = doc.date || Utils.getToday();
+        document.getElementById('pq-doc-title').value = doc.title || '';
+        document.getElementById('pq-doc-subtitle').value = doc.subtitle || '';
+        document.getElementById('pq-recipient-name').value = doc.recipient?.name || '';
+        document.getElementById('pq-recipient-org').value = doc.recipient?.org || '';
+        document.getElementById('pq-recipient-address').value = doc.recipient?.address || '';
+        document.getElementById('pq-recipient-phone').value = doc.recipient?.phone || '';
+        document.getElementById('pq-doc-subject').value = doc.subject || '';
+        document.getElementById('pq-doc-body').value = doc.body || '';
+        document.getElementById('pq-discount').value = doc.discount || 0;
+        document.getElementById('pq-vat').value = doc.vat || 0;
+        document.getElementById('pq-doc-notes').value = doc.notes || '';
+        document.getElementById('pq-prepared-by').value = doc.preparedBy || '';
+        document.getElementById('pq-authorized-by').value = doc.authorizedBy || '';
+
+        const container = document.getElementById('pq-items-container');
+        if (container) {
+            container.innerHTML = '';
+            if (doc.items && doc.items.length > 0) {
+                doc.items.forEach(it => this.addPageItemRow(it));
+            } else {
+                this.addPageItemRow();
+            }
+        }
+
+        this.calculatePageTotals();
+
+        const formCard = document.getElementById('form-page-quotation');
+        if (formCard) formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        UI.toast(`কোটেশন "${doc.refNo}" এডিটের জন্য প্রস্তুত`, 'info');
+    },
+
+    renderSavedList() {
+        const container = document.getElementById('pq-saved-list-container');
+        if (!container) return;
+
+        const docs = DB.getDocuments();
+        if (docs.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state" style="padding:28px 16px; text-align:center; color:var(--text-secondary);">
+                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:8px; opacity:0.6;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <p style="margin:0; font-size:14px; font-weight:600;">কোনো সংরক্ষিত কোটেশন বা প্যাড নেই</p>
+                    <p style="margin:4px 0 0 0; font-size:12px;">উপরের ফর্মে তথ্য পূরণ করে "PDF জেনারেট ও সেভ করুন" বোতামে ক্লিক করুন।</p>
+                </div>
+            `;
+            return;
+        }
+
+        const typeLabels = {
+            quotation: 'বাণিজ্যিক দরপত্র',
+            invoice: 'বিল / ইনভয়েস',
+            letter: 'অফিসিয়াল চিঠি',
+            notice: 'নোটিশ'
+        };
+
+        const typeBadges = {
+            quotation: 'badge-primary',
+            invoice: 'badge-success',
+            letter: 'badge-info',
+            notice: 'badge-warning'
+        };
+
+        container.innerHTML = `
+            <div class="table-responsive">
+                <table class="data-table documents-table" style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr>
+                            <th style="width:130px;">স্মারক / Ref</th>
+                            <th style="width:110px;">ধরন</th>
+                            <th>শিরোনাম ও প্রাপক</th>
+                            <th style="width:90px;">তারিখ</th>
+                            <th style="text-align:right; width:110px;">মোট টাকা</th>
+                            <th style="text-align:right; width:180px;">অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${docs.map(d => {
+                            const recName = d.recipient?.name || d.recipient?.org || 'সাধারণ';
+                            const subtotal = (d.items || []).reduce((s, it) => s + (it.total || 0), 0);
+                            const grandTotal = Math.max(0, subtotal + (d.vat || 0) - (d.discount || 0));
+                            const amountStr = grandTotal > 0 ? (grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2 }) + ' ৳') : '—';
+                            return `
+                                <tr>
+                                    <td><strong style="color:var(--primary); font-size:12.5px;">${this._escapeHtml(d.refNo)}</strong></td>
+                                    <td><span class="badge ${typeBadges[d.type] || 'badge-primary'}">${typeLabels[d.type] || d.type}</span></td>
+                                    <td>
+                                        <div style="font-weight:600; font-size:13px; color:var(--text-primary);">${this._escapeHtml(d.title)}</div>
+                                        <div style="font-size:11px; color:var(--text-secondary);">${this._escapeHtml(recName)}</div>
+                                    </td>
+                                    <td><small style="color:var(--text-secondary);">${d.date}</small></td>
+                                    <td style="text-align:right; font-weight:700; color:#008852;">${amountStr}</td>
+                                    <td style="text-align:right; white-space:nowrap;">
+                                        <button type="button" class="btn btn-xs btn-primary" onclick="CompanyDocuments.downloadById('${d.id}')" title="PDF ডাউনলোড" style="background:#008852; border-color:#008852;">
+                                            PDF
+                                        </button>
+                                        <button type="button" class="btn btn-xs btn-outline" onclick="CompanyDocuments.previewById('${d.id}')" title="প্রিভিউ">
+                                            প্রিভিউ
+                                        </button>
+                                        <button type="button" class="btn btn-xs btn-outline" onclick="CompanyDocuments.loadIntoPageForm('${d.id}')" title="এডিট">
+                                            এডিট
+                                        </button>
+                                        <button type="button" class="btn btn-xs btn-danger" onclick="CompanyDocuments.deleteById('${d.id}')" title="মুছুন">
+                                            &times;
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    },
+
     async deleteById(id) {
         const doc = DB.getDocument(id);
         if (!doc) return;
@@ -3041,6 +3437,11 @@ const CompanyDocuments = {
             DB.deleteDocument(id);
             UI.toast('ডকুমেন্ট মুছে ফেলা হয়েছে!', 'success');
             this.renderList();
+            this.renderSavedList();
+            const currId = document.getElementById('pq-doc-id');
+            if (currId && currId.value === id) {
+                this.resetPageForm();
+            }
         }
     }
 };
@@ -3186,6 +3587,7 @@ const App = {
             case 'workers': Workers.render(); break;
             case 'attendance': Attendance.render(); break;
             case 'payment': Payments.render(); break;
+            case 'quotation': CompanyDocuments.renderPage(); break;
             case 'report': this.setupReportPage(); break;
             case 'settings': Settings.init(); break;
         }
