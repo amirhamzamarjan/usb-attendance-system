@@ -13,9 +13,12 @@
     <link rel="stylesheet" href="style.css">
     <!-- Google Fonts for Bangla typography in PDF and UI -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700&display=swap" rel="stylesheet">
-    <!-- jsPDF for PDF generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <!-- jsPDF, AutoTable & PDF-Lib (Offline-ready with local bundle) -->
+    <script src="lib/jspdf.umd.min.js"></script>
+    <script src="lib/jspdf.plugin.autotable.min.js"></script>
+    <script src="lib/pdf-lib.min.js"></script>
+    <script src="lib/bangla-font-data.js"></script>
+    <script src="assets/pad-data.js"></script>
 </head>
 <body>
     <!-- Toast Notification Container -->
@@ -171,6 +174,169 @@
                 <button class="modal-close" onclick="UI.closeModal('modal-report')">&times;</button>
             </div>
             <div id="report-content" class="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Document / Quotation Builder Modal -->
+    <div id="modal-doc-builder" class="modal-overlay" style="display:none;">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3 id="doc-builder-title">অফিসিয়াল প্যাড ও কোটেশন তৈরি</h3>
+                <button class="modal-close" onclick="UI.closeModal('modal-doc-builder')">&times;</button>
+            </div>
+            <form id="form-doc-builder" class="modal-body">
+                <input type="hidden" id="doc-id">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="doc-type">ডকুমেন্টের ধরন *</label>
+                        <select id="doc-type" required>
+                            <option value="quotation">বাণিজ্যিক দরপত্র (Quotation)</option>
+                            <option value="invoice">বিল / ইনভয়েস (Invoice)</option>
+                            <option value="letter">অফিসিয়াল প্যাড চিঠি (Official Letter)</option>
+                            <option value="notice">অফিসিয়াল নোটিশ (Notice)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="doc-ref">স্মারক / রেফারেন্স নং *</label>
+                        <input type="text" id="doc-ref" required placeholder="যেমন: UB/QT/2026/001">
+                    </div>
+                    <div class="form-group">
+                        <label for="doc-date">তারিখ *</label>
+                        <input type="date" id="doc-date" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group" style="flex:2;">
+                        <label for="doc-title">শিরোনাম (Title) *</label>
+                        <input type="text" id="doc-title" required placeholder="যেমন: COMMERCIAL QUOTATION / বাণিজ্যিক দরপত্র">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label for="doc-subtitle">উপ-শিরোনাম (Subtitle)</label>
+                        <input type="text" id="doc-subtitle" placeholder="যেমন: Metal, Electric, Gas Solutions">
+                    </div>
+                </div>
+
+                <div class="section-card" style="margin-bottom:16px; padding:12px;">
+                    <h4 style="margin-bottom:8px; font-size:14px; color:var(--text-primary);">প্রাপকের তথ্য (Recipient Information)</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="doc-recipient-name">প্রাপকের নাম / পদবি</label>
+                            <input type="text" id="doc-recipient-name" placeholder="যেমন: জনাব মোঃ আশিকুর রহমান">
+                        </div>
+                        <div class="form-group">
+                            <label for="doc-recipient-org">কোম্পানি / প্রতিষ্ঠান</label>
+                            <input type="text" id="doc-recipient-org" placeholder="যেমন: মেসার্স বেঙ্গল স্টিল লিমিটেড">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="doc-recipient-address">ঠিকানা</label>
+                            <input type="text" id="doc-recipient-address" placeholder="যেমন: প্লট নং ১২, ডিআইটি রোড, ঢাকা">
+                        </div>
+                        <div class="form-group">
+                            <label for="doc-recipient-phone">মোবাইল / ইমেইল</label>
+                            <input type="text" id="doc-recipient-phone" placeholder="যেমন: ০১৭১১-XXXXXX">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="doc-subject">বিষয় (Subject)</label>
+                    <input type="text" id="doc-subject" placeholder="যেমন: কারখানা আধুনিকায়ন কাজের জন্য মেটাল ও ইলেকট্রিক সামগ্রী সরবরাহ">
+                </div>
+
+                <div class="form-group">
+                    <label for="doc-body">মূল বক্তব্য / চিঠির অংশ (Body Description)</label>
+                    <textarea id="doc-body" rows="4" placeholder="চিঠির বিস্তারিত বক্তব্য বা দরপত্রের প্রাথমিক বিবরণ এখানে লিখুন..."></textarea>
+                </div>
+
+                <!-- Line Items Section -->
+                <div class="section-card" style="margin-bottom:16px; padding:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <h4 style="margin:0; font-size:14px; color:var(--text-primary);">আইটেম / পণ্য তালিকা (Line Items)</h4>
+                        <button type="button" class="btn btn-sm btn-outline" id="btn-add-doc-item">+ আইটেম যোগ করুন</button>
+                    </div>
+                    
+                    <div id="doc-items-container" class="doc-items-table-wrapper">
+                        <!-- Dynamic Item Rows -->
+                    </div>
+
+                    <div class="doc-totals-summary" style="margin-top:12px; display:flex; justify-content:flex-end;">
+                        <div style="width:260px;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px;">
+                                <span>উপ-মোট (Subtotal):</span>
+                                <strong id="doc-calc-subtotal">০.০০ BDT</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:13px;">
+                                <span>ছাড় (Discount BDT):</span>
+                                <input type="number" id="doc-discount" min="0" value="0" style="width:100px; padding:4px 8px; font-size:13px; text-align:right;">
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:13px;">
+                                <span>ভ্যাট/ট্যাক্স (VAT BDT):</span>
+                                <input type="number" id="doc-vat" min="0" value="0" style="width:100px; padding:4px 8px; font-size:13px; text-align:right;">
+                            </div>
+                            <div style="display:flex; justify-content:space-between; padding-top:6px; border-top:1px solid var(--border); font-size:14px; color:var(--primary); font-weight:bold;">
+                                <span>সর্বমোট (Grand Total):</span>
+                                <span id="doc-calc-grand-total">০.০০ BDT</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="doc-notes">শর্তাবলী / বিশেষ নোট (Terms & Conditions)</label>
+                    <textarea id="doc-notes" rows="3" placeholder="১. দরপত্রের মেয়াদ ৩০ দিন বলবৎ থাকবে।&#10;২. মালামাল সাইটে পৌঁছানোর পরিবহন খরচ কোম্পানির।"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="doc-prepared-by">প্রস্তুতকারক (Prepared By)</label>
+                        <input type="text" id="doc-prepared-by" placeholder="যেমন: ইঞ্জিনিয়ার মোঃ মারজান">
+                    </div>
+                    <div class="form-group">
+                        <label for="doc-authorized-by">অনুমোদনকারী (Authorized Signatory)</label>
+                        <input type="text" id="doc-authorized-by" placeholder="যেমন: ব্যবস্থাপনা পরিচালক, US BENGOL">
+                    </div>
+                </div>
+
+                <div class="form-actions" style="margin-top:20px; display:flex; gap:10px; justify-content:flex-end;">
+                    <button type="button" class="btn btn-outline" onclick="UI.closeModal('modal-doc-builder')">বাতিল</button>
+                    <button type="button" class="btn btn-outline" id="btn-preview-doc">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        লাইভ প্রিভিউ
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btn-download-doc-direct">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        PDF ডাউনলোড
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        সংরক্ষণ করুন
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Document Live Letterhead Preview Modal -->
+    <div id="modal-doc-preview" class="modal-overlay" style="display:none;">
+        <div class="modal-content modal-xl">
+            <div class="modal-header">
+                <h3>ইউএস বেঙ্গল মূল প্যাডে প্রিভিউ (US BENGOL Letterhead)</h3>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button class="btn btn-sm btn-primary" id="btn-download-from-preview">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        PDF ডাউনলোড করুন
+                    </button>
+                    <button class="modal-close" onclick="UI.closeModal('modal-doc-preview')">&times;</button>
+                </div>
+            </div>
+            <div class="modal-body" style="background:#374151; padding:20px; overflow-y:auto; max-height:82vh;">
+                <div id="doc-preview-sheets-container">
+                    <!-- Multi-page sheets rendered with real US BENGOL letterhead background -->
+                </div>
+            </div>
         </div>
     </div>
 
@@ -364,6 +530,30 @@
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                             সকল PDF রিপোর্ট তৈরি করুন
                         </button>
+                    </div>
+                    <div class="section-card report-card" id="report-letterhead-doc">
+                        <div class="report-icon" style="color:#008852;">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="13" y2="16"/></svg>
+                        </div>
+                        <h3>অফিসিয়াল প্যাড ও কোটেশন</h3>
+                        <p>US BENGOL মূল লেটারহেডে দরপত্র, বিল বা অফিসিয়াল চিঠি তৈরি করুন</p>
+                        <div class="form-row">
+                            <button class="btn btn-primary btn-block" id="btn-open-doc-builder">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                নতুন ডকুমেন্ট / কোটেশন তৈরি করুন
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Saved Documents List -->
+                <div class="section-card" style="margin-top:20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <h3 class="section-title" style="margin:0;">সংরক্ষিত প্যাড ও কোটেশনসমূহ</h3>
+                        <button class="btn btn-sm btn-outline" onclick="CompanyDocuments.openBuilder()">+ নতুন ডকুমেন্ট</button>
+                    </div>
+                    <div id="documents-list-container">
+                        <!-- Loaded dynamically -->
                     </div>
                 </div>
             </div>

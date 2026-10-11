@@ -104,6 +104,33 @@ const DB = {
         this.savePayments(payments);
     },
 
+    /* Documents (Quotations, Invoices, Pads) */
+    getDocuments() { return this._get('documents') || []; },
+    saveDocuments(documents) { return this._set('documents', documents); },
+    getDocument(id) { return this.getDocuments().find(d => d.id === id); },
+    addDocument(doc) {
+        const docs = this.getDocuments();
+        doc.id = this.generateId();
+        doc.createdAt = new Date().toISOString();
+        docs.push(doc);
+        this.saveDocuments(docs);
+        return doc;
+    },
+    updateDocument(id, data) {
+        const docs = this.getDocuments();
+        const idx = docs.findIndex(d => d.id === id);
+        if (idx !== -1) {
+            docs[idx] = { ...docs[idx], ...data, updatedAt: new Date().toISOString() };
+            this.saveDocuments(docs);
+            return docs[idx];
+        }
+        return null;
+    },
+    deleteDocument(id) {
+        const docs = this.getDocuments().filter(d => d.id !== id);
+        this.saveDocuments(docs);
+    },
+
     /* Settings */
     getSettings() { return this._get('settings') || { darkMode: false }; },
     saveSetting(key, value) {
@@ -125,6 +152,7 @@ const DB = {
             workers: this.getWorkers(),
             attendance: this.getAttendance(),
             payments: this.getPayments(),
+            documents: this.getDocuments(),
             settings: this.getSettings()
         };
     },
@@ -132,6 +160,7 @@ const DB = {
         if (data.workers) this.saveWorkers(data.workers);
         if (data.attendance) this._set('attendance', data.attendance);
         if (data.payments) this.savePayments(data.payments);
+        if (data.documents) this.saveDocuments(data.documents);
         if (data.settings) this._set('settings', data.settings);
     },
     resetAttendance() { this._set('attendance', []); },
@@ -1523,49 +1552,30 @@ const Calendar = {
 
 
 /* ==================== BANGLA FONT LOADER ====================
-   Loads Noto Sans Bengali from CDN for PDF rendering.
-   Falls back to English if the font cannot be loaded.
+   Loads Kalpurush Unicode Bengali font locally for PDF rendering.
+   Falls back to English/Helvetica if unavailable.
    ============================================================ */
 const BanglaFont = {
     fontData: null,
-    fontName: 'BNFont',
-    fileName: 'NotoSansBengali-Regular.ttf',
-    urls: [
-        'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/notosansbengali/static/NotoSansBengali-Regular.ttf',
-        'https://raw.githubusercontent.com/google/fonts/main/ofl/notosansbengali/static/NotoSansBengali-Regular.ttf'
-    ],
+    fontName: 'Kalpurush',
+    fileName: 'Kalpurush.ttf',
     isLoaded: false,
-    isLoading: false,
-    _loadPromise: null,
 
     async load() {
         if (this.isLoaded) return true;
-        if (this.isLoading) return this._loadPromise;
-
-        this.isLoading = true;
-        this._loadPromise = this._doLoad();
-        return this._loadPromise;
-    },
-
-    async _doLoad() {
-        for (const url of this.urls) {
-            try {
-                const resp = await fetch(url, { mode: 'cors' });
-                if (!resp.ok) continue;
-                const buf = await resp.arrayBuffer();
-                this.fontData = this._bufferToBase64(buf);
-                this.isLoaded = true;
-                console.log('Bangla font loaded from:', url);
-                return true;
-            } catch (e) {
-                console.warn('Font URL failed:', url);
-            }
+        if (typeof window !== 'undefined' && window.KALPURUSH_FONT_B64) {
+            this.fontData = window.KALPURUSH_FONT_B64;
+            this.isLoaded = true;
+            return true;
         }
-        console.warn('All Bangla font CDN URLs failed — will use English fallback');
         return false;
     },
 
     register(doc) {
+        if (!this.fontData && typeof window !== 'undefined' && window.KALPURUSH_FONT_B64) {
+            this.fontData = window.KALPURUSH_FONT_B64;
+            this.isLoaded = true;
+        }
         if (!this.fontData) return false;
         try {
             doc.addFileToVFS(this.fileName, this.fontData);
@@ -1576,24 +1586,17 @@ const BanglaFont = {
             console.error('Font registration failed:', e);
             return false;
         }
-    },
-
-    _bufferToBase64(buffer) {
-        let bin = '';
-        const bytes = new Uint8Array(buffer);
-        for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-        return btoa(bin);
     }
 };
 
 /* ==================== REPORTS MODULE ====================
-   Dual-language PDF Reports (Bangla with English fallback)
+   Dual-language PDF Reports on Original US BENGOL Letterhead
    ======================================================== */
 const Reports = {
 
-    /* Language & font state — set per report */
-    _lang: 'en',
-    _fontName: 'helvetica',
+    /* Language & font state */
+    _lang: 'bn',
+    _fontName: 'Kalpurush',
 
     /* Bangla ↔ English string helper */
     __(bn, en) { return this._lang === 'bn' ? bn : en; },
@@ -1601,73 +1604,107 @@ const Reports = {
     /* Font setter shorthand */
     _setFont(doc, style) { doc.setFont(this._fontName, style || 'normal'); },
 
-    /* ─────────────────────────────────────────────────
-       Add fallback notice (English mode only)
-       ───────────────────────────────────────────────── */
-    _addFallbackNotice(doc) {
-        if (this._lang === 'bn') return;
-        doc.setFont('helvetica', 'italic');
-        doc.setFontSize(7.5);
-        doc.setTextColor(180, 100, 80);
-        const msg = 'Bangla PDF is currently unavailable on this device. This report has been generated in English for compatibility.';
-        doc.text(msg, 105, 46, { align: 'center', maxWidth: 170 });
+    /* Stamp Letterhead Background */
+    _stampPadBg(doc) {
+        if (typeof window !== 'undefined' && window.US_BENGOL_PAD_BG) {
+            try {
+                doc.addImage(window.US_BENGOL_PAD_BG, 'PNG', 0, 0, 210, 297, undefined, 'FAST');
+            } catch (e) {
+                console.warn('Pad background raster stamp failed:', e);
+            }
+        }
+    },
+
+    /* Save PDF with Original Illustrator Vector Letterhead Merge */
+    async _saveWithLetterhead(doc, filename) {
+        const totalPages = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+            doc.setPage(i);
+            this._addFooter(doc, i, totalPages);
+        }
+
+        let finalBytes = null;
+        let usedVector = false;
+
+        if (typeof window !== 'undefined' && window.PDFLib && window.PDFLib.PDFDocument) {
+            try {
+                const resp = await fetch('assets/pad.pdf');
+                if (resp.ok) {
+                    const padBytes = await resp.arrayBuffer();
+                    const jsPdfBytes = doc.output('arraybuffer');
+                    const { PDFDocument } = window.PDFLib;
+                    const finalPdfDoc = await PDFDocument.load(jsPdfBytes);
+                    const templatePdfDoc = await PDFDocument.load(padBytes);
+                    const [embeddedPad] = await finalPdfDoc.embedPdf(templatePdfDoc, [0]);
+
+                    const pages = finalPdfDoc.getPages();
+                    for (const page of pages) {
+                        page.drawPage(embeddedPad, {
+                            x: -8.504,
+                            y: -8.504,
+                            width: 612.283,
+                            height: 858.898,
+                            opacity: 1.0,
+                        });
+                    }
+                    finalBytes = await finalPdfDoc.save();
+                    usedVector = true;
+                }
+            } catch (e) {
+                console.warn('Vector PDF-Lib merge failed, fallback to jsPDF direct download:', e);
+            }
+        }
+
+        if (!usedVector) {
+            doc.save(filename);
+            return;
+        }
+
+        const blob = new Blob([finalBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     },
 
     /* ─────────────────────────────────────────────────
-       Footer with page numbers
+       Footer with page numbers (placed safely at y = 266mm)
        ───────────────────────────────────────────────── */
     _addFooter(doc, pageNum, totalPages) {
+        if (totalPages <= 1) return;
         this._setFont(doc, 'normal');
-        doc.setFontSize(8);
-        doc.setTextColor(100);
-        const now = new Date();
-        const d = now.getDate().toString().padStart(2, '0');
-        const mo = (now.getMonth() + 1).toString().padStart(2, '0');
-        const h = now.getHours().toString().padStart(2, '0');
-        const mi = now.getMinutes().toString().padStart(2, '0');
-        const dateStr = `${d}/${mo}/${now.getFullYear()} ${h}:${mi}`;
-        const genLabel = 'Generated:';
-        const pageLabel = 'Page';
-        doc.text(`${genLabel} ${dateStr}`, 20, 290);
-        doc.text(`${pageLabel} ${pageNum} / ${totalPages}`, 190, 290, { align: 'right' });
+        doc.setFontSize(7.5);
+        doc.setTextColor(120, 120, 120);
+        doc.text(`পৃষ্ঠা / Page ${pageNum} of ${totalPages}`, 105, 266, { align: 'center' });
     },
 
     /* ─────────────────────────────────────────────────
-       Company header
+       Header inside safe middle dynamic area (y = 48mm)
+       Original letterhead artwork occupies y = 0 to 42mm
        ───────────────────────────────────────────────── */
     _drawHeader(doc, title, subtitle) {
-        // Logo box
-        doc.setFillColor(26, 115, 232);
-        doc.setDrawColor(26, 115, 232);
-        doc.roundedRect(17, 14, 14, 14, 3, 3, 'F');
-        this._setFont(doc, 'bold');
-        doc.setFontSize(10);
-        doc.setTextColor(255, 255, 255);
-        doc.text('UB', 24, 24, { align: 'center' });
-
-        // Company name
-        this._setFont(doc, 'bold');
-        doc.setFontSize(18);
-        doc.setTextColor(26, 115, 232);
-        doc.text('US BENGOL', 105, 20, { align: 'center' });
-
-        // Separator line
-        doc.setDrawColor(26, 115, 232);
-        doc.line(20, 26, 190, 26);
-
-        // Title
+        let y = 48;
         this._setFont(doc, 'bold');
         doc.setFontSize(13);
-        doc.setTextColor(50, 50, 50);
-        doc.text(title, 105, 33, { align: 'center' });
+        doc.setTextColor(27, 54, 93); // US BENGOL Navy Blue
+        doc.text(title, 105, y, { align: 'center' });
+        y += 5.5;
 
-        // Subtitle
         if (subtitle) {
             this._setFont(doc, 'normal');
-            doc.setFontSize(10);
-            doc.setTextColor(80);
-            doc.text(subtitle, 105, 39, { align: 'center' });
+            doc.setFontSize(9);
+            doc.setTextColor(80, 80, 80);
+            doc.text(subtitle, 105, y, { align: 'center' });
+            y += 5;
         }
+
+        doc.setDrawColor(0, 136, 82); // US BENGOL Green
+        doc.setLineWidth(0.4);
+        doc.line(18, y, 192, y);
     },
 
     /* ─────────────────────────────────────────────────
@@ -1812,9 +1849,17 @@ const Reports = {
        INDIVIDUAL WORKER PDF
        ═══════════════════════════════════════════════ */
     async _ensureFont(doc) {
-        // Always generate PDF in English for reliability across all devices
+        await BanglaFont.load();
+        const ok = BanglaFont.register(doc);
+        if (ok) {
+            this._lang = 'bn';
+            this._fontName = 'Kalpurush';
+            doc.setFont('Kalpurush');
+            return true;
+        }
         this._lang = 'en';
         this._fontName = 'helvetica';
+        doc.setFont('helvetica');
         return false;
     },
 
@@ -1823,17 +1868,16 @@ const Reports = {
         if (!w) { UI.toast('Worker not found!', 'error'); return; }
 
         try {
-            // Check jsPDF library
             if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF !== 'function') {
-                UI.toast('jsPDF library not loaded! Check internet connection.', 'error');
+                UI.toast('jsPDF library not loaded!', 'error');
                 return;
             }
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
 
-            // Load Bangla font (sets _lang and _fontName)
             await this._ensureFont(doc);
+            this._stampPadBg(doc);
 
             // ─── Parse month range ────────────────
             const [startY, startM] = startMonth.split('-').map(Number);
@@ -1844,7 +1888,7 @@ const Reports = {
                 ? ` - ${enMonths[endM - 1]} ${endY}`
                 : '';
 
-            // ─── Header ─────────────────────────────
+            // ─── Header inside safe area (y = 48mm) ──
             this._drawHeader(doc,
                 'Employee Attendance & Payroll Statement',
                 `Report Month: ${monthLabel}${endLabel}`
@@ -1865,7 +1909,7 @@ const Reports = {
                 { label: wageLabel, value: wageValue },
                 { label: 'Overtime Rate', value: `${Utils.formatCurrency(w.overtimeRate)}/hour` }
             ];
-            let y = this._drawInfoBox(doc, this._lang === 'bn' ? 46 : 50, infoData);
+            let y = this._drawInfoBox(doc, 60, infoData);
 
             // ─── Collect Attendance Data ──────────
             let totalFullDays = 0, totalHalfDays = 0, totalPaidLeaves = 0;
@@ -1946,8 +1990,9 @@ const Reports = {
             // ─── Detailed Attendance Table ────────
             if (allRecords.length > 0) {
                 if (y > 200) {
-                    this._addFooter(doc, doc.internal.getNumberOfPages(), 0);
-                    doc.addPage(); y = 20;
+                    doc.addPage();
+                    this._stampPadBg(doc);
+                    y = 48;
                 }
 
                 this._setFont(doc, 'bold');
@@ -1984,16 +2029,19 @@ const Reports = {
                     head: [attHeaders],
                     body: attRows,
                     theme: 'grid',
-                    headStyles: { fillColor: [26, 115, 232], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
-                    bodyStyles: { fontSize: 7.5, cellPadding: 1.5 },
+                    headStyles: { fillColor: [27, 54, 93], textColor: [255, 255, 255], font: this._fontName, fontStyle: 'bold', fontSize: 8 },
+                    bodyStyles: { font: this._fontName, fontSize: 7.5, cellPadding: 1.5 },
                     alternateRowStyles: { fillColor: [248, 250, 255] },
                     styles: { font: this._fontName, lineColor: [220, 220, 220], lineWidth: 0.1 },
-                    margin: { left: 20, right: 20 },
-                    pageBreak: 'auto'
+                    margin: { top: 48, bottom: 35, left: 18, right: 18 },
+                    pageBreak: 'auto',
+                    rowPageBreak: 'avoid',
+                    showHead: 'everyPage',
+                    willDrawPage: () => { this._stampPadBg(doc); }
                 });
                 y = doc.lastAutoTable.finalY + 8;
             } else {
-                if (y > 260) { doc.addPage(); y = 20; }
+                if (y > 220) { doc.addPage(); this._stampPadBg(doc); y = 48; }
                 this._setFont(doc, 'normal');
                 doc.setFontSize(9);
                 doc.setTextColor(150);
@@ -2004,9 +2052,10 @@ const Reports = {
             // ─── Payment History ─────────────────
             const payments = DB.getPaymentsByWorker(workerId);
             if (payments.length > 0) {
-                if (y > 230) {
-                    this._addFooter(doc, doc.internal.getNumberOfPages(), 0);
-                    doc.addPage(); y = 20;
+                if (y > 210) {
+                    doc.addPage();
+                    this._stampPadBg(doc);
+                    y = 48;
                 }
 
                 this._setFont(doc, 'bold');
@@ -2032,13 +2081,16 @@ const Reports = {
                     head: [payHeaders],
                     body: payRows,
                     theme: 'grid',
-                    headStyles: { fillColor: [26, 115, 232], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
-                    bodyStyles: { fontSize: 7.5, cellPadding: 1.5 },
+                    headStyles: { fillColor: [27, 54, 93], textColor: [255, 255, 255], font: this._fontName, fontStyle: 'bold', fontSize: 8 },
+                    bodyStyles: { font: this._fontName, fontSize: 7.5, cellPadding: 1.5 },
                     alternateRowStyles: { fillColor: [248, 250, 255] },
                     columnStyles: { 0: { cellWidth: 35 }, 1: { cellWidth: 80 }, 2: { cellWidth: 40, halign: 'right' } },
                     styles: { font: this._fontName, lineColor: [220, 220, 220], lineWidth: 0.1 },
-                    margin: { left: 20, right: 20 },
-                    pageBreak: 'auto'
+                    margin: { top: 48, bottom: 35, left: 18, right: 18 },
+                    pageBreak: 'auto',
+                    rowPageBreak: 'avoid',
+                    showHead: 'everyPage',
+                    willDrawPage: () => { this._stampPadBg(doc); }
                 });
                 y = doc.lastAutoTable.finalY + 10;
             } else {
@@ -2054,8 +2106,9 @@ const Reports = {
             const due = Math.max(0, totalEarned - totalPaid);
 
             if (y > 200) {
-                this._addFooter(doc, doc.internal.getNumberOfPages(), 0);
-                doc.addPage(); y = 20;
+                doc.addPage();
+                this._stampPadBg(doc);
+                y = 48;
             }
 
             const salaryItems = [
@@ -2070,15 +2123,8 @@ const Reports = {
             // ─── Signatures ───────────────────────
             this._drawSignatures(doc, y);
 
-            // ─── Footer on all pages ────────────
-            const totalPages = doc.internal.getNumberOfPages();
-            for (let i = 1; i <= totalPages; i++) {
-                doc.setPage(i);
-                this._addFooter(doc, i, totalPages);
-            }
-
-            doc.save(`${w.workerId}_${w.name}_Report.pdf`);
-            UI.toast('PDF report downloaded!', 'success');
+            await this._saveWithLetterhead(doc, `${w.workerId}_${w.name}_Report.pdf`);
+            UI.toast('PDF রিপোর্ট তৈরি ও ডাউনলোড সম্পন্ন হয়েছে!', 'success');
 
         } catch (err) {
             console.error('PDF generation error:', err);
@@ -2103,12 +2149,13 @@ const Reports = {
             const doc = new jsPDF('p', 'mm', 'a4');
 
             await this._ensureFont(doc);
+            this._stampPadBg(doc);
 
             const [year, mon] = month.split('-').map(Number);
             const enMonths = ['January','February','March','April','May','June','July','August','September','October','November','December'];
             const monthName = `${enMonths[mon - 1]} ${year}`;
 
-            // ─── Header ─────────────────────────────
+            // ─── Header inside safe area (y = 48mm) ──
             this._drawHeader(doc,
                 'All Workers Monthly Payroll & Attendance Report',
                 `Month: ${monthName}`
@@ -2132,7 +2179,7 @@ const Reports = {
             allPayts.forEach(p => { if (p.date.startsWith(monthPrefix)) grandPaid += p.amount; });
             const grandDue = Math.max(0, grandEarned - grandPaid);
 
-            let y = 46;
+            let y = 60;
             const scW = 37.5, scG = 4, scX = 22;
             const sCards = [
                 { label: 'Total Workers', value: String(workers.length), bg: [245, 248, 255], border: [200, 215, 245], textColor: [26, 115, 232], labelColor: [80, 80, 80] },
@@ -2193,8 +2240,8 @@ const Reports = {
                 head: [tblHeaders],
                 body: tableRows,
                 theme: 'grid',
-                headStyles: { fillColor: [26, 115, 232], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
-                bodyStyles: { fontSize: 7.5, cellPadding: 1.5 },
+                headStyles: { fillColor: [27, 54, 93], textColor: [255, 255, 255], font: this._fontName, fontStyle: 'bold', fontSize: 8 },
+                bodyStyles: { font: this._fontName, fontSize: 7.5, cellPadding: 1.5 },
                 alternateRowStyles: { fillColor: [248, 250, 255] },
                 columnStyles: {
                     0: { cellWidth: 50 },
@@ -2205,16 +2252,18 @@ const Reports = {
                     5: { cellWidth: 24, halign: 'right' }
                 },
                 styles: { font: this._fontName, lineColor: [220, 220, 220], lineWidth: 0.1 },
-                margin: { left: 15, right: 15 },
+                margin: { top: 48, bottom: 35, left: 15, right: 15 },
                 pageBreak: 'auto',
-                showHead: 'everyPage'
+                rowPageBreak: 'avoid',
+                showHead: 'everyPage',
+                willDrawPage: () => { this._stampPadBg(doc); }
             });
             y = doc.lastAutoTable.finalY + 10;
 
             // ─── Final Totals ─────────────────────
-            if (y > 250) { doc.addPage(); y = 20; }
+            if (y > 220) { doc.addPage(); this._stampPadBg(doc); y = 48; }
 
-            doc.setDrawColor(26, 115, 232);
+            doc.setDrawColor(27, 54, 93);
             doc.setFillColor(245, 248, 255);
             doc.roundedRect(20, y, 170, 30, 4, 4, 'FD');
 
@@ -2236,19 +2285,762 @@ const Reports = {
             // ─── Signatures ─────────────────────────
             this._drawSignatures(doc, y + 36);
 
-            // ─── Footer on all pages ────────────────
-            const totalPages = doc.internal.getNumberOfPages();
-            for (let i = 1; i <= totalPages; i++) {
-                doc.setPage(i);
-                this._addFooter(doc, i, totalPages);
-            }
-
-            doc.save(`US_BENGOL_All_Workers_${month}.pdf`);
+            await this._saveWithLetterhead(doc, `US_BENGOL_All_Workers_${month}.pdf`);
             UI.toast('All workers PDF report downloaded!', 'success');
 
         } catch (err) {
             console.error('PDF generation error:', err);
             UI.toast('Failed to generate PDF!', 'error');
+        }
+    },
+
+    /* ═══════════════════════════════════════════════
+       CUSTOM LETTERHEAD DOCUMENT (QUOTATION, INVOICE, PAD)
+       ═══════════════════════════════════════════════ */
+    async generateDocumentPDF(docData) {
+        if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF !== 'function') {
+            UI.toast('jsPDF লাইব্রেরি লোড হয়নি!', 'error');
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+
+        await this._ensureFont(doc);
+        this._stampPadBg(doc);
+
+        const leftX = 18;
+        const rightX = 192;
+        const contentW = rightX - leftX; // 174 mm
+
+        let y = 48;
+
+        // 1. Document Title & Subtitle
+        this._setFont(doc, 'bold');
+        doc.setFontSize(13);
+        doc.setTextColor(27, 54, 93); // US BENGOL Navy Blue
+        doc.text(docData.title || 'QUOTATION / দরপত্র', 105, y, { align: 'center' });
+        y += 5.5;
+
+        if (docData.subtitle) {
+            this._setFont(doc, 'normal');
+            doc.setFontSize(9);
+            doc.setTextColor(80, 80, 80);
+            doc.text(docData.subtitle, 105, y, { align: 'center' });
+            y += 5;
+        }
+
+        // Horizontal green rule
+        doc.setDrawColor(0, 136, 82); // US BENGOL Green
+        doc.setLineWidth(0.4);
+        doc.line(leftX, y, rightX, y);
+        y += 5;
+
+        // 2. Reference & Date
+        this._setFont(doc, 'normal');
+        doc.setFontSize(8.5);
+        doc.setTextColor(50, 50, 50);
+        doc.text(`স্মারক / Ref: ${docData.refNo || 'UB/DOC/' + Utils.getToday()}`, leftX, y);
+        doc.text(`তারিখ / Date: ${docData.date || Utils.getToday()}`, rightX, y, { align: 'right' });
+        y += 6;
+
+        // 3. Recipient Information Box
+        if (docData.recipient && (docData.recipient.name || docData.recipient.org)) {
+            doc.setFillColor(248, 250, 252);
+            doc.setDrawColor(220, 226, 235);
+            doc.roundedRect(leftX, y, contentW, 18, 2, 2, 'FD');
+
+            doc.setFontSize(8.5);
+            doc.setTextColor(40, 40, 40);
+            this._setFont(doc, 'bold');
+            doc.text(`প্রাপক / To: ${docData.recipient.name || ''}`, leftX + 4, y + 5);
+            this._setFont(doc, 'normal');
+            if (docData.recipient.org) doc.text(docData.recipient.org, leftX + 4, y + 9);
+            if (docData.recipient.address) doc.text(docData.recipient.address, leftX + 4, y + 13);
+            if (docData.recipient.phone) doc.text(`মোবাইল: ${docData.recipient.phone}`, rightX - 4, y + 5, { align: 'right' });
+            y += 22;
+        }
+
+        // 4. Subject
+        if (docData.subject) {
+            this._setFont(doc, 'bold');
+            doc.setFontSize(9.5);
+            doc.setTextColor(27, 54, 93);
+            doc.text(`বিষয় / Subject: ${docData.subject}`, leftX, y);
+            y += 6;
+        }
+
+        // 5. Body Text
+        if (docData.body) {
+            this._setFont(doc, 'normal');
+            doc.setFontSize(8.5);
+            doc.setTextColor(40, 40, 40);
+            const splitBody = doc.splitTextToSize(docData.body, contentW);
+            doc.text(splitBody, leftX, y);
+            y += splitBody.length * 4.5 + 4;
+        }
+
+        // 6. Dynamic Items Table (with auto-overflow, repeated headers)
+        if (docData.items && docData.items.length > 0) {
+            const tableHeaders = ['ক্রমিক', 'বিবরণ (Description)', 'পরিমাণ (Qty)', 'দর (Rate BDT)', 'মোট (Total BDT)'];
+            const tableRows = docData.items.map((item, idx) => [
+                String(idx + 1),
+                item.desc,
+                `${item.qty} ${item.unit || ''}`.trim(),
+                Number(item.rate || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }),
+                Number(item.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })
+            ]);
+
+            doc.autoTable({
+                startY: y,
+                head: [tableHeaders],
+                body: tableRows,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [27, 54, 93],
+                    textColor: [255, 255, 255],
+                    font: this._fontName,
+                    fontStyle: 'bold',
+                    fontSize: 8,
+                    halign: 'center'
+                },
+                bodyStyles: {
+                    font: this._fontName,
+                    fontSize: 7.5,
+                    cellPadding: 1.8,
+                    textColor: [40, 40, 40]
+                },
+                alternateRowStyles: {
+                    fillColor: [248, 250, 253]
+                },
+                columnStyles: {
+                    0: { cellWidth: 14, halign: 'center' },
+                    1: { cellWidth: 80 },
+                    2: { cellWidth: 24, halign: 'center' },
+                    3: { cellWidth: 26, halign: 'right' },
+                    4: { cellWidth: 30, halign: 'right' }
+                },
+                styles: { lineColor: [220, 226, 235], lineWidth: 0.1 },
+                margin: { top: 48, bottom: 35, left: leftX, right: 18 },
+                pageBreak: 'auto',
+                rowPageBreak: 'avoid',
+                showHead: 'everyPage',
+                willDrawPage: () => {
+                    this._stampPadBg(doc);
+                }
+            });
+
+            y = doc.lastAutoTable.finalY + 4;
+
+            // Totals Box
+            if (y > 225) {
+                doc.addPage();
+                this._stampPadBg(doc);
+                y = 48;
+            }
+
+            const subtotal = docData.items.reduce((s, it) => s + (Number(it.total) || 0), 0);
+            const discount = Number(docData.discount) || 0;
+            const vat = Number(docData.vat) || 0;
+            const grandTotal = subtotal + vat - discount;
+
+            const totBoxW = 75;
+            const totBoxX = rightX - totBoxW;
+
+            doc.setDrawColor(220, 226, 235);
+            doc.setFillColor(250, 252, 255);
+            doc.roundedRect(totBoxX, y, totBoxW, discount > 0 || vat > 0 ? 24 : 16, 2, 2, 'FD');
+
+            let ty = y + 4.5;
+            this._setFont(doc, 'normal');
+            doc.setFontSize(8);
+            doc.setTextColor(60, 60, 60);
+            doc.text('উপ-মোট / Subtotal:', totBoxX + 4, ty);
+            doc.text(subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 }), rightX - 4, ty, { align: 'right' });
+
+            if (discount > 0) {
+                ty += 4;
+                doc.text('ছাড় / Discount:', totBoxX + 4, ty);
+                doc.text(`- ${discount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, rightX - 4, ty, { align: 'right' });
+            }
+            if (vat > 0) {
+                ty += 4;
+                doc.text('ভ্যাট / VAT:', totBoxX + 4, ty);
+                doc.text(`+ ${vat.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, rightX - 4, ty, { align: 'right' });
+            }
+
+            ty += 2;
+            doc.setDrawColor(0, 136, 82);
+            doc.setLineWidth(0.3);
+            doc.line(totBoxX + 2, ty, rightX - 2, ty);
+            ty += 4.5;
+
+            this._setFont(doc, 'bold');
+            doc.setFontSize(9);
+            doc.setTextColor(27, 54, 93);
+            doc.text('সর্বমোট / Grand Total:', totBoxX + 4, ty);
+            doc.text(`${grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })} BDT`, rightX - 4, ty, { align: 'right' });
+
+            y = ty + 8;
+        }
+
+        // 7. Terms & Conditions
+        if (docData.notes) {
+            if (y > 230) {
+                doc.addPage();
+                this._stampPadBg(doc);
+                y = 48;
+            }
+            this._setFont(doc, 'bold');
+            doc.setFontSize(8);
+            doc.setTextColor(60, 60, 60);
+            doc.text('শর্তাবলী / Terms & Conditions:', leftX, y);
+            y += 4;
+            this._setFont(doc, 'normal');
+            doc.setFontSize(7.5);
+            doc.setTextColor(70, 70, 70);
+            const splitNotes = doc.splitTextToSize(docData.notes, contentW);
+            doc.text(splitNotes, leftX, y);
+            y += splitNotes.length * 3.8 + 6;
+        }
+
+        // 8. Signatures Section
+        if (y > 235) {
+            doc.addPage();
+            this._stampPadBg(doc);
+            y = 48;
+        }
+        const sigY = Math.max(y + 8, 238);
+        doc.setDrawColor(180, 180, 180);
+        doc.setLineWidth(0.3);
+        doc.line(leftX, sigY, leftX + 48, sigY);
+        doc.line(rightX - 48, sigY, rightX, sigY);
+
+        this._setFont(doc, 'normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(70, 70, 70);
+        doc.text(docData.preparedBy || 'প্রস্তুতকারক / Prepared By', leftX + 24, sigY + 4, { align: 'center' });
+        doc.text(docData.authorizedBy || 'অনুমোদনকারী / Authorized Signatory', rightX - 24, sigY + 4, { align: 'center' });
+
+        const safeFilename = `${docData.refNo || 'US_BENGOL_Doc'}`.replace(/[/\\?%*:|"<>]/g, '_') + '.pdf';
+        await this._saveWithLetterhead(doc, safeFilename);
+        UI.toast('অফিসিয়াল প্যাড PDF ডাউনলোড সম্পন্ন হয়েছে!', 'success');
+    }
+};
+
+
+/* ==================== COMPANY DOCUMENTS MODULE ====================
+   Official US BENGOL Quotations, Invoices, Letters & Notices Builder
+   ================================================================== */
+const CompanyDocuments = {
+    _currentDoc: null,
+
+    init() {
+        this.bindEvents();
+        this.seedSamplesIfEmpty();
+        this.renderList();
+    },
+
+    seedSamplesIfEmpty() {
+        const docs = DB.getDocuments();
+        if (docs.length === 0) {
+            const sampleQuotation = {
+                id: 'sample-qt-01',
+                type: 'quotation',
+                refNo: 'UB/QT/2026/0088',
+                date: Utils.getToday(),
+                title: 'COMMERCIAL QUOTATION / বাণিজ্যিক দরপত্র',
+                subtitle: 'Metal, Electrical & Gas Supply Solutions',
+                recipient: {
+                    name: 'জনাব মোহাম্মদ মোস্তফা কামাল (প্রজেক্ট ডিরেক্টর)',
+                    org: 'মেঘনা টেক্সটাইল অ্যান্ড স্টিল লিমিটেড',
+                    address: 'প্লট ৪২, সিইপিজেড শিল্প এলাকা, চট্টগ্রাম',
+                    phone: '+8801711 234567'
+                },
+                subject: 'কারখানা আধুনিকায়ন প্রকল্পের জন্য মেটাল ও ইলেকট্রিক সামগ্রী সরবরাহ দরপত্র',
+                body: 'সম্মানিত মহোদয়, আপনার পত্র নং MT-459 এর প্রেক্ষিতে আমরা অত্যন্ত আনন্দের সাথে আপনার চাহিদামাফিক মালামালের বিস্তারিত বিবরণ এবং সর্বনিম্ন মূল্যতালিকা নিচে উপস্থাপন করছি। আমরা আন্তর্জাতিক মানসম্পন্ন পণ্য সরবরাহে প্রতিশ্রুতিবদ্ধ।',
+                items: [
+                    { desc: 'হাই-প্রেসার গ্যাস রেগুলেটর ভালভ (Model: G-204)', qty: 5, unit: 'Pcs', rate: 4500, total: 22500 },
+                    { desc: 'হেভি-ডিউটি কপার কেবল (3Core 16sqmm - 100m Roll)', qty: 8, unit: 'Rolls', rate: 18500, total: 148000 },
+                    { desc: 'এসএস মেটাল পাইপ (Grade 304, 2-inch, 20ft)', qty: 25, unit: 'Pcs', rate: 3200, total: 80000 },
+                    { desc: 'ইন্ডাস্ট্রিয়াল গ্যাস ফ্লো-মিটার সেন্সর', qty: 2, unit: 'Sets', rate: 38000, total: 76000 },
+                    { desc: 'সার্কিট ব্রেকার ও কন্ট্রোল প্যানেল বক্স (IP65)', qty: 4, unit: 'Units', rate: 12500, total: 50000 }
+                ],
+                discount: 5000,
+                vat: 0,
+                notes: '১. এই দরপত্রের মেয়াদ ইস্যু তারিখ হতে ৩০ দিন পর্যন্ত বলবৎ থাকবে।\n২. মালামাল চট্টগ্রাম সাইটে পৌঁছানোর পরিবহন খরচ কোম্পানি বহন করবে।\n৩. কার্যাদেশ প্রাপ্তির ১৫ কার্যদিবসের মধ্যে সরবরাহ সম্পন্ন হবে।\n৪. পরিশোধের শর্তাবলী: ৫০% অগ্রিম এবং অবশিষ্ট ৫০% মালামাল বুঝে পাওয়ার পর চেকে মারফত।',
+                preparedBy: 'ইঞ্জিনিয়ার মারজান (বিক্রয় ও প্রকল্প)',
+                authorizedBy: 'ব্যবস্থাপনা পরিচালক, US BENGOL'
+            };
+
+            const sampleNotice = {
+                id: 'sample-nt-01',
+                type: 'notice',
+                refNo: 'UB/ADM/2026/014',
+                date: Utils.getToday(),
+                title: 'OFFICIAL NOTICE / নোটিশ',
+                subtitle: 'US BENGOL Internal Office Communication',
+                recipient: {
+                    name: 'সকল বিভাগীয় প্রধান ও কর্মকর্তা-কর্মচারী',
+                    org: 'US BENGOL Manufacturing & Operations',
+                    address: 'উত্তরা ও টঙ্গী কারখানা শাখা, ঢাকা',
+                    phone: '+8801921 692008'
+                },
+                subject: 'কারখানা নিরাপত্তা ও হাজিরা সংক্রান্ত নির্দেশনা',
+                body: 'এতদ্বারা US BENGOL-এর সকল কর্মকর্তা ও কর্মচারীকে জানানো যাচ্ছে যে, আগামী ১৫ অক্টোবর ২০২৬ তারিখ থেকে নতুন ডিজিটাল হাজিরা সিস্টেমে এবং সুরক্ষা প্রটোকল কার্যকর হবে। নির্ধারিত কর্মসময়ের মধ্যে ডিজিটাল হাজিরা সম্পন্ন করতে সকলকে অনুরোধ করা হচ্ছে।',
+                items: [],
+                discount: 0,
+                vat: 0,
+                notes: '১. সকল শাখা ব্যবস্থাপক নিশ্চিত করবেন।\n২. জরুরি প্রয়োজনে প্রধান কার্যালয়ে যোগাযোগ করুন।',
+                preparedBy: 'প্রশাসন বিভাগ, US BENGOL',
+                authorizedBy: 'ব্যবস্থাপনা পরিচালক, US BENGOL'
+            };
+
+            DB.addDocument(sampleQuotation);
+            DB.addDocument(sampleNotice);
+        }
+    },
+
+    bindEvents() {
+        const btnOpen = document.getElementById('btn-open-doc-builder');
+        if (btnOpen) btnOpen.addEventListener('click', () => this.openBuilder());
+
+        const btnAdd = document.getElementById('btn-add-doc-item');
+        if (btnAdd) btnAdd.addEventListener('click', () => this.addItemRow());
+
+        const form = document.getElementById('form-doc-builder');
+        if (form) form.addEventListener('submit', (e) => this.saveFromForm(e));
+
+        const btnPreview = document.getElementById('btn-preview-doc');
+        if (btnPreview) btnPreview.addEventListener('click', () => this.previewCurrentForm());
+
+        const btnDirect = document.getElementById('btn-download-doc-direct');
+        if (btnDirect) btnDirect.addEventListener('click', () => this.downloadDirectFromForm());
+
+        const btnDownloadPreview = document.getElementById('btn-download-from-preview');
+        if (btnDownloadPreview) btnDownloadPreview.addEventListener('click', () => {
+            if (this._currentDoc) Reports.generateDocumentPDF(this._currentDoc);
+        });
+
+        // Discount & VAT live changes
+        const discInput = document.getElementById('doc-discount');
+        if (discInput) discInput.addEventListener('input', () => this.calculateTotals());
+        const vatInput = document.getElementById('doc-vat');
+        if (vatInput) vatInput.addEventListener('input', () => this.calculateTotals());
+
+        // Type change auto title
+        const typeSelect = document.getElementById('doc-type');
+        if (typeSelect) {
+            typeSelect.addEventListener('change', (e) => {
+                const titleInput = document.getElementById('doc-title');
+                const t = e.target.value;
+                if (t === 'quotation') titleInput.value = 'COMMERCIAL QUOTATION / বাণিজ্যিক দরপত্র';
+                else if (t === 'invoice') titleInput.value = 'OFFICIAL INVOICE / চালান ও বিল';
+                else if (t === 'letter') titleInput.value = 'OFFICIAL LETTER / অফিসিয়াল পত্র';
+                else if (t === 'notice') titleInput.value = 'OFFICIAL NOTICE / নোটিশ';
+            });
+        }
+    },
+
+    openBuilder(docId = null) {
+        const form = document.getElementById('form-doc-builder');
+        if (!form) return;
+        form.reset();
+        document.getElementById('doc-items-container').innerHTML = '';
+
+        if (docId) {
+            const doc = DB.getDocument(docId);
+            if (doc) {
+                document.getElementById('doc-id').value = doc.id;
+                document.getElementById('doc-type').value = doc.type || 'quotation';
+                document.getElementById('doc-ref').value = doc.refNo || '';
+                document.getElementById('doc-date').value = doc.date || Utils.getToday();
+                document.getElementById('doc-title').value = doc.title || '';
+                document.getElementById('doc-subtitle').value = doc.subtitle || '';
+                if (doc.recipient) {
+                    document.getElementById('doc-recipient-name').value = doc.recipient.name || '';
+                    document.getElementById('doc-recipient-org').value = doc.recipient.org || '';
+                    document.getElementById('doc-recipient-address').value = doc.recipient.address || '';
+                    document.getElementById('doc-recipient-phone').value = doc.recipient.phone || '';
+                }
+                document.getElementById('doc-subject').value = doc.subject || '';
+                document.getElementById('doc-body').value = doc.body || '';
+                document.getElementById('doc-discount').value = doc.discount || 0;
+                document.getElementById('doc-vat').value = doc.vat || 0;
+                document.getElementById('doc-notes').value = doc.notes || '';
+                document.getElementById('doc-prepared-by').value = doc.preparedBy || '';
+                document.getElementById('doc-authorized-by').value = doc.authorizedBy || '';
+
+                if (doc.items && doc.items.length > 0) {
+                    doc.items.forEach(it => this.addItemRow(it));
+                } else {
+                    this.addItemRow();
+                }
+                this.calculateTotals();
+                UI.openModal('modal-doc-builder');
+                return;
+            }
+        }
+
+        // New Document
+        document.getElementById('doc-id').value = '';
+        document.getElementById('doc-type').value = 'quotation';
+        document.getElementById('doc-ref').value = `UB/QT/${new Date().getFullYear()}/${String(Math.floor(Math.random() * 900) + 100)}`;
+        document.getElementById('doc-date').value = Utils.getToday();
+        document.getElementById('doc-title').value = 'COMMERCIAL QUOTATION / বাণিজ্যিক দরপত্র';
+        document.getElementById('doc-subtitle').value = 'Metal, Electrical & Gas Supply Solutions';
+        document.getElementById('doc-prepared-by').value = 'ইঞ্জিনিয়ার মারজান';
+        document.getElementById('doc-authorized-by').value = 'ব্যবস্থাপনা পরিচালক, US BENGOL';
+        document.getElementById('doc-discount').value = 0;
+        document.getElementById('doc-vat').value = 0;
+
+        this.addItemRow();
+        this.addItemRow();
+        this.calculateTotals();
+        UI.openModal('modal-doc-builder');
+    },
+
+    addItemRow(item = null) {
+        const container = document.getElementById('doc-items-container');
+        if (!container) return;
+
+        const row = document.createElement('div');
+        row.className = 'doc-item-row';
+        row.innerHTML = `
+            <div style="flex:3;">
+                <input type="text" class="item-desc" placeholder="পণ্যের বিবরণ *" value="${item ? (item.desc || '') : ''}" required>
+            </div>
+            <div style="flex:1;">
+                <input type="number" class="item-qty" placeholder="পরিমাণ" value="${item ? (item.qty || 1) : 1}" min="0" step="any" required>
+            </div>
+            <div style="flex:1;">
+                <input type="text" class="item-unit" placeholder="একক (Pcs/Kg)" value="${item ? (item.unit || 'Pcs') : 'Pcs'}">
+            </div>
+            <div style="flex:1.5;">
+                <input type="number" class="item-rate" placeholder="দর (BDT)" value="${item ? (item.rate || 0) : 0}" min="0" step="any" required>
+            </div>
+            <div style="flex:1.5; display:flex; align-items:center; justify-content:flex-end;">
+                <span class="item-total-display" style="font-weight:600; font-size:13px; color:var(--text-primary); margin-right:8px;">0.00</span>
+                <button type="button" class="btn-remove-row" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:16px; padding:2px 6px;">&times;</button>
+            </div>
+        `;
+
+        const qtyInput = row.querySelector('.item-qty');
+        const rateInput = row.querySelector('.item-rate');
+        const updateRowTotal = () => {
+            const q = parseFloat(qtyInput.value) || 0;
+            const r = parseFloat(rateInput.value) || 0;
+            const tot = q * r;
+            row.querySelector('.item-total-display').textContent = tot.toLocaleString('en-US', { minimumFractionDigits: 2 });
+            this.calculateTotals();
+        };
+
+        qtyInput.addEventListener('input', updateRowTotal);
+        rateInput.addEventListener('input', updateRowTotal);
+
+        row.querySelector('.btn-remove-row').addEventListener('click', () => {
+            row.remove();
+            this.calculateTotals();
+        });
+
+        container.appendChild(row);
+        updateRowTotal();
+    },
+
+    calculateTotals() {
+        const rows = document.querySelectorAll('.doc-item-row');
+        let subtotal = 0;
+        rows.forEach(r => {
+            const q = parseFloat(r.querySelector('.item-qty').value) || 0;
+            const rt = parseFloat(r.querySelector('.item-rate').value) || 0;
+            subtotal += (q * rt);
+        });
+
+        const disc = parseFloat(document.getElementById('doc-discount')?.value) || 0;
+        const vat = parseFloat(document.getElementById('doc-vat')?.value) || 0;
+        const grandTotal = Math.max(0, subtotal + vat - disc);
+
+        const subEl = document.getElementById('doc-calc-subtotal');
+        if (subEl) subEl.textContent = `${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })} BDT`;
+
+        const grandEl = document.getElementById('doc-calc-grand-total');
+        if (grandEl) grandEl.textContent = `${grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })} BDT`;
+    },
+
+    _getFormData() {
+        const id = document.getElementById('doc-id').value;
+        const items = [];
+        document.querySelectorAll('.doc-item-row').forEach(r => {
+            const desc = r.querySelector('.item-desc').value.trim();
+            const qty = parseFloat(r.querySelector('.item-qty').value) || 0;
+            const unit = r.querySelector('.item-unit').value.trim();
+            const rate = parseFloat(r.querySelector('.item-rate').value) || 0;
+            if (desc) {
+                items.push({ desc, qty, unit, rate, total: qty * rate });
+            }
+        });
+
+        return {
+            id: id || undefined,
+            type: document.getElementById('doc-type').value,
+            refNo: document.getElementById('doc-ref').value.trim(),
+            date: document.getElementById('doc-date').value,
+            title: document.getElementById('doc-title').value.trim(),
+            subtitle: document.getElementById('doc-subtitle').value.trim(),
+            recipient: {
+                name: document.getElementById('doc-recipient-name').value.trim(),
+                org: document.getElementById('doc-recipient-org').value.trim(),
+                address: document.getElementById('doc-recipient-address').value.trim(),
+                phone: document.getElementById('doc-recipient-phone').value.trim()
+            },
+            subject: document.getElementById('doc-subject').value.trim(),
+            body: document.getElementById('doc-body').value.trim(),
+            items,
+            discount: parseFloat(document.getElementById('doc-discount').value) || 0,
+            vat: parseFloat(document.getElementById('doc-vat').value) || 0,
+            notes: document.getElementById('doc-notes').value.trim(),
+            preparedBy: document.getElementById('doc-prepared-by').value.trim(),
+            authorizedBy: document.getElementById('doc-authorized-by').value.trim()
+        };
+    },
+
+    saveFromForm(e) {
+        if (e) e.preventDefault();
+        const data = this._getFormData();
+        if (data.id) {
+            DB.updateDocument(data.id, data);
+            UI.toast('ডকুমেন্ট সফলভাবে আপডেট হয়েছে!', 'success');
+        } else {
+            DB.addDocument(data);
+            UI.toast('নতুন ডকুমেন্ট সফলভাবে সংরক্ষিত হয়েছে!', 'success');
+        }
+        UI.closeModal('modal-doc-builder');
+        this.renderList();
+    },
+
+    previewCurrentForm() {
+        const data = this._getFormData();
+        this.previewDocument(data);
+    },
+
+    downloadDirectFromForm() {
+        const data = this._getFormData();
+        Reports.generateDocumentPDF(data);
+    },
+
+    previewDocument(docData) {
+        this._currentDoc = docData;
+        const container = document.getElementById('doc-preview-sheets-container');
+        if (!container) return;
+
+        const subtotal = (docData.items || []).reduce((s, it) => s + (it.total || 0), 0);
+        const grandTotal = subtotal + (docData.vat || 0) - (docData.discount || 0);
+
+        const itemsHtml = (docData.items && docData.items.length > 0) ? `
+            <table class="pad-preview-table" style="width:100%; border-collapse:collapse; margin-top:12px; font-size:12px;">
+                <thead>
+                    <tr style="background:#1b365d; color:#ffffff; text-align:center;">
+                        <th style="padding:6px; border:1px solid #cbd5e1; width:35px;">ক্রমিক</th>
+                        <th style="padding:6px; border:1px solid #cbd5e1; text-align:left;">বিবরণ</th>
+                        <th style="padding:6px; border:1px solid #cbd5e1; width:70px;">পরিমাণ</th>
+                        <th style="padding:6px; border:1px solid #cbd5e1; width:80px; text-align:right;">দর (BDT)</th>
+                        <th style="padding:6px; border:1px solid #cbd5e1; width:90px; text-align:right;">মোট (BDT)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${docData.items.map((it, idx) => `
+                        <tr style="background:${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; color:#334155;">
+                            <td style="padding:5px; border:1px solid #e2e8f0; text-align:center;">${idx + 1}</td>
+                            <td style="padding:5px; border:1px solid #e2e8f0;">${it.desc}</td>
+                            <td style="padding:5px; border:1px solid #e2e8f0; text-align:center;">${it.qty} ${it.unit || ''}</td>
+                            <td style="padding:5px; border:1px solid #e2e8f0; text-align:right;">${Number(it.rate).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                            <td style="padding:5px; border:1px solid #e2e8f0; text-align:right; font-weight:600;">${Number(it.total).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+                <div style="width:250px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; padding:8px; font-size:12px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                        <span>উপ-মোট / Subtotal:</span>
+                        <span>${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    ${docData.discount > 0 ? `
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; color:#e11d48;">
+                            <span>ছাড় / Discount:</span>
+                            <span>- ${Number(docData.discount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                        </div>
+                    ` : ''}
+                    ${docData.vat > 0 ? `
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                            <span>ভ্যাট / VAT:</span>
+                            <span>+ ${Number(docData.vat).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                        </div>
+                    ` : ''}
+                    <div style="display:flex; justify-content:space-between; padding-top:4px; border-top:1px solid #008852; font-weight:bold; color:#1b365d; font-size:13px;">
+                        <span>সর্বমোট / Grand Total:</span>
+                        <span>${grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })} BDT</span>
+                    </div>
+                </div>
+            </div>
+        ` : '';
+
+        const bgUrl = (typeof window !== 'undefined' && window.US_BENGOL_PAD_BG) ? window.US_BENGOL_PAD_BG : 'assets/pad_background.png';
+
+        container.innerHTML = `
+            <div class="pad-preview-sheet" style="background-image:url('${bgUrl}'); background-size:100% 100%; background-repeat:no-repeat; box-shadow:0 10px 25px rgba(0,0,0,0.3); margin:0 auto 20px auto; position:relative; background-color:#ffffff;">
+                <div class="pad-preview-body-zone">
+                    <div style="text-align:center; margin-bottom:6px;">
+                        <h2 style="font-size:18px; color:#1b365d; margin:0 0 4px 0; font-weight:700;">${docData.title}</h2>
+                        ${docData.subtitle ? `<p style="font-size:11px; color:#64748b; margin:0;">${docData.subtitle}</p>` : ''}
+                        <div style="height:2px; background:#008852; margin:6px auto 10px auto; width:100%;"></div>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; font-size:11px; color:#475569; margin-bottom:10px;">
+                        <span><strong>স্মারক / Ref:</strong> ${docData.refNo}</span>
+                        <span><strong>তারিখ / Date:</strong> ${docData.date}</span>
+                    </div>
+
+                    ${(docData.recipient && (docData.recipient.name || docData.recipient.org)) ? `
+                        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; padding:8px 12px; margin-bottom:10px; font-size:11px;">
+                            <div style="display:flex; justify-content:space-between;">
+                                <div>
+                                    <strong style="color:#1e293b;">প্রাপক / To: ${docData.recipient.name || ''}</strong>
+                                    ${docData.recipient.org ? `<div>${docData.recipient.org}</div>` : ''}
+                                    ${docData.recipient.address ? `<div>${docData.recipient.address}</div>` : ''}
+                                </div>
+                                ${docData.recipient.phone ? `<div style="color:#475569;">মোবাইল: ${docData.recipient.phone}</div>` : ''}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${docData.subject ? `
+                        <div style="font-size:13px; font-weight:700; color:#1b365d; margin-bottom:8px;">
+                            বিষয় / Subject: ${docData.subject}
+                        </div>
+                    ` : ''}
+
+                    ${docData.body ? `
+                        <div style="font-size:11.5px; line-height:1.6; color:#334155; margin-bottom:10px; white-space:pre-wrap;">
+                            ${docData.body}
+                        </div>
+                    ` : ''}
+
+                    ${itemsHtml}
+
+                    ${docData.notes ? `
+                        <div style="margin-top:12px; font-size:11px; color:#64748b; background:#fafafa; border-left:3px solid #008852; padding:6px 10px;">
+                            <strong>শর্তাবলী / Terms & Conditions:</strong>
+                            <div style="white-space:pre-wrap; margin-top:2px;">${docData.notes}</div>
+                        </div>
+                    ` : ''}
+
+                    <div style="display:flex; justify-content:space-between; margin-top:40px; padding:0 20px;">
+                        <div style="text-align:center; border-top:1px solid #94a3b8; width:160px; padding-top:4px; font-size:11px; color:#475569;">
+                            ${docData.preparedBy || 'প্রস্তুতকারক / Prepared By'}
+                        </div>
+                        <div style="text-align:center; border-top:1px solid #94a3b8; width:160px; padding-top:4px; font-size:11px; color:#475569;">
+                            ${docData.authorizedBy || 'অনুমোদনকারী / Authorized Signatory'}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        UI.openModal('modal-doc-preview');
+    },
+
+    renderList() {
+        const container = document.getElementById('documents-list-container');
+        if (!container) return;
+
+        const docs = DB.getDocuments();
+        if (docs.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state" style="padding:24px; text-align:center; color:var(--text-secondary);">
+                    <p>কোনো সংরক্ষিত ডকুমেন্ট নেই। উপরের "+ নতুন ডকুমেন্ট" বোতামে ক্লিক করুন।</p>
+                </div>
+            `;
+            return;
+        }
+
+        const typeLabels = {
+            quotation: 'বাণিজ্যিক দরপত্র',
+            invoice: 'বিল / ইনভয়েস',
+            letter: 'অফিসিয়াল চিঠি',
+            notice: 'নোটিশ'
+        };
+
+        const typeBadges = {
+            quotation: 'badge-primary',
+            invoice: 'badge-success',
+            letter: 'badge-info',
+            notice: 'badge-warning'
+        };
+
+        container.innerHTML = `
+            <table class="data-table documents-table" style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr>
+                        <th>স্মারক / Ref</th>
+                        <th>ধরন</th>
+                        <th>শিরোনাম ও প্রাপক</th>
+                        <th>তারিখ</th>
+                        <th style="text-align:right;">অ্যাকশন</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${docs.map(d => {
+                        const recName = d.recipient?.name || d.recipient?.org || 'সাধারণ';
+                        return `
+                            <tr>
+                                <td><strong style="color:var(--primary);">${d.refNo}</strong></td>
+                                <td><span class="badge ${typeBadges[d.type] || 'badge-primary'}">${typeLabels[d.type] || d.type}</span></td>
+                                <td>
+                                    <div style="font-weight:600; font-size:13px;">${d.title}</div>
+                                    <div style="font-size:11px; color:var(--text-secondary);">${recName}</div>
+                                </td>
+                                <td><small>${d.date}</small></td>
+                                <td style="text-align:right; white-space:nowrap;">
+                                    <button class="btn btn-xs btn-outline" onclick="CompanyDocuments.previewById('${d.id}')" title="প্রিভিউ">
+                                        প্রিভিউ
+                                    </button>
+                                    <button class="btn btn-xs btn-primary" onclick="CompanyDocuments.downloadById('${d.id}')" title="PDF ডাউনলোড">
+                                        PDF
+                                    </button>
+                                    <button class="btn btn-xs btn-outline" onclick="CompanyDocuments.openBuilder('${d.id}')" title="এডিট">
+                                        এডিট
+                                    </button>
+                                    <button class="btn btn-xs btn-danger" onclick="CompanyDocuments.deleteById('${d.id}')" title="মুছুন">
+                                        &times;
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        `;
+    },
+
+    previewById(id) {
+        const doc = DB.getDocument(id);
+        if (doc) this.previewDocument(doc);
+    },
+
+    downloadById(id) {
+        const doc = DB.getDocument(id);
+        if (doc) Reports.generateDocumentPDF(doc);
+    },
+
+    async deleteById(id) {
+        const doc = DB.getDocument(id);
+        if (!doc) return;
+        const ok = await UI.confirm('ডকুমেন্ট মুছুন', `স্মারক "${doc.refNo}" স্থায়ীভাবে মুছে ফেলতে চান?`, 'মুছুন', 'btn-danger');
+        if (ok) {
+            DB.deleteDocument(id);
+            UI.toast('ডকুমেন্ট মুছে ফেলা হয়েছে!', 'success');
+            this.renderList();
         }
     }
 };
@@ -2350,6 +3142,9 @@ const App = {
             if (ok) console.log('Bangla PDF font ready');
             else console.log('Bangla PDF font unavailable — English fallback');
         });
+
+        // Initialize Company Documents Module
+        CompanyDocuments.init();
     },
 
     setupNavigation() {
@@ -2413,6 +3208,9 @@ const App = {
         document.getElementById('report-start-month').value = monthStr;
         document.getElementById('report-end-month').value = monthStr;
         document.getElementById('report-all-month').value = monthStr;
+
+        // Render company documents (Quotations, Invoices, Pads)
+        CompanyDocuments.renderList();
     },
 
     setupEventListeners() {
