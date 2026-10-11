@@ -2,7 +2,7 @@
    US BENGOL - Service Worker for Offline Support (PWA)
    ============================================================ */
 
-const CACHE_NAME = 'usbengol-v1';
+const CACHE_NAME = 'usbengol-v3';
 const ASSETS = [
     './',
     './index.html',

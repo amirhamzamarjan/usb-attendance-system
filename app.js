@@ -2319,7 +2319,7 @@ const Reports = {
         this._setFont(doc, 'bold');
         doc.setFontSize(13);
         doc.setTextColor(27, 54, 93); // US BENGOL Navy Blue
-        doc.text(docData.title || 'QUOTATION / দরপত্র', 105, y, { align: 'center' });
+        doc.text(docData.title || 'COMMERCIAL QUOTATION', 105, y, { align: 'center' });
         y += 5.5;
 
         if (docData.subtitle) {
@@ -2340,8 +2340,8 @@ const Reports = {
         this._setFont(doc, 'normal');
         doc.setFontSize(8.5);
         doc.setTextColor(50, 50, 50);
-        doc.text(`স্মারক / Ref: ${docData.refNo || 'UB/DOC/' + Utils.getToday()}`, leftX, y);
-        doc.text(`তারিখ / Date: ${docData.date || Utils.getToday()}`, rightX, y, { align: 'right' });
+        doc.text(`Ref: ${docData.refNo || 'UB/QT/' + Utils.getToday()}`, leftX, y);
+        doc.text(`Date: ${docData.date || Utils.getToday()}`, rightX, y, { align: 'right' });
         y += 6;
 
         // 3. Recipient Information Box
@@ -2353,11 +2353,11 @@ const Reports = {
             doc.setFontSize(8.5);
             doc.setTextColor(40, 40, 40);
             this._setFont(doc, 'bold');
-            doc.text(`প্রাপক / To: ${docData.recipient.name || ''}`, leftX + 4, y + 5);
+            doc.text(`To / Attention: ${docData.recipient.name || ''}`, leftX + 4, y + 5);
             this._setFont(doc, 'normal');
             if (docData.recipient.org) doc.text(docData.recipient.org, leftX + 4, y + 9);
             if (docData.recipient.address) doc.text(docData.recipient.address, leftX + 4, y + 13);
-            if (docData.recipient.phone) doc.text(`মোবাইল: ${docData.recipient.phone}`, rightX - 4, y + 5, { align: 'right' });
+            if (docData.recipient.phone) doc.text(`Contact: ${docData.recipient.phone}`, rightX - 4, y + 5, { align: 'right' });
             y += 22;
         }
 
@@ -2366,7 +2366,7 @@ const Reports = {
             this._setFont(doc, 'bold');
             doc.setFontSize(9.5);
             doc.setTextColor(27, 54, 93);
-            doc.text(`বিষয় / Subject: ${docData.subject}`, leftX, y);
+            doc.text(`Subject: ${docData.subject}`, leftX, y);
             y += 6;
         }
 
@@ -2382,7 +2382,7 @@ const Reports = {
 
         // 6. Dynamic Items Table (with auto-overflow, repeated headers)
         if (docData.items && docData.items.length > 0) {
-            const tableHeaders = ['ক্রমিক', 'বিবরণ (Description)', 'পরিমাণ (Qty)', 'দর (Rate BDT)', 'মোট (Total BDT)'];
+            const tableHeaders = ['SL', 'ITEM DESCRIPTION', 'QTY', 'UNIT PRICE (BDT)', 'TOTAL (BDT)'];
             const tableRows = docData.items.map((item, idx) => [
                 String(idx + 1),
                 item.desc,
@@ -2455,18 +2455,18 @@ const Reports = {
             this._setFont(doc, 'normal');
             doc.setFontSize(8);
             doc.setTextColor(60, 60, 60);
-            doc.text('উপ-মোট / Subtotal:', totBoxX + 4, ty);
-            doc.text(subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 }), rightX - 4, ty, { align: 'right' });
+            doc.text('Subtotal:', totBoxX + 4, ty);
+            doc.text(subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 }) + ' BDT', rightX - 4, ty, { align: 'right' });
 
             if (discount > 0) {
                 ty += 4;
-                doc.text('ছাড় / Discount:', totBoxX + 4, ty);
-                doc.text(`- ${discount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, rightX - 4, ty, { align: 'right' });
+                doc.text('Discount:', totBoxX + 4, ty);
+                doc.text(`- ${discount.toLocaleString('en-US', { minimumFractionDigits: 2 })} BDT`, rightX - 4, ty, { align: 'right' });
             }
             if (vat > 0) {
                 ty += 4;
-                doc.text('ভ্যাট / VAT:', totBoxX + 4, ty);
-                doc.text(`+ ${vat.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, rightX - 4, ty, { align: 'right' });
+                doc.text('VAT / Tax:', totBoxX + 4, ty);
+                doc.text(`+ ${vat.toLocaleString('en-US', { minimumFractionDigits: 2 })} BDT`, rightX - 4, ty, { align: 'right' });
             }
 
             ty += 2;
@@ -2478,7 +2478,7 @@ const Reports = {
             this._setFont(doc, 'bold');
             doc.setFontSize(9);
             doc.setTextColor(27, 54, 93);
-            doc.text('সর্বমোট / Grand Total:', totBoxX + 4, ty);
+            doc.text('Grand Total:', totBoxX + 4, ty);
             doc.text(`${grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })} BDT`, rightX - 4, ty, { align: 'right' });
 
             y = ty + 8;
@@ -2494,7 +2494,7 @@ const Reports = {
             this._setFont(doc, 'bold');
             doc.setFontSize(8);
             doc.setTextColor(60, 60, 60);
-            doc.text('শর্তাবলী / Terms & Conditions:', leftX, y);
+            doc.text('Terms & Conditions:', leftX, y);
             y += 4;
             this._setFont(doc, 'normal');
             doc.setFontSize(7.5);
@@ -2519,8 +2519,8 @@ const Reports = {
         this._setFont(doc, 'normal');
         doc.setFontSize(7.5);
         doc.setTextColor(70, 70, 70);
-        doc.text(docData.preparedBy || 'প্রস্তুতকারক / Prepared By', leftX + 24, sigY + 4, { align: 'center' });
-        doc.text(docData.authorizedBy || 'অনুমোদনকারী / Authorized Signatory', rightX - 24, sigY + 4, { align: 'center' });
+        doc.text(docData.preparedBy || 'Prepared By', leftX + 24, sigY + 4, { align: 'center' });
+        doc.text(docData.authorizedBy || 'Authorized Signatory', rightX - 24, sigY + 4, { align: 'center' });
 
         const safeFilename = `${docData.refNo || 'US_BENGOL_Doc'}`.replace(/[/\\?%*:|"<>]/g, '_') + '.pdf';
         await this._saveWithLetterhead(doc, safeFilename);
@@ -2540,6 +2540,14 @@ const CompanyDocuments = {
         this.seedSamplesIfEmpty();
         this.renderList();
         this.renderSavedList();
+
+        // Auto-fill quotation page date and ref if empty on startup
+        const pqDate = document.getElementById('pq-doc-date');
+        if (pqDate && !pqDate.value) pqDate.value = Utils.getToday();
+        const pqRef = document.getElementById('pq-doc-ref');
+        if (pqRef && !pqRef.value) {
+            pqRef.value = `UB/QT/${new Date().getFullYear()}/${String(Math.floor(Math.random() * 900) + 100)}`;
+        }
     },
 
     seedSamplesIfEmpty() {
@@ -2550,28 +2558,28 @@ const CompanyDocuments = {
                 type: 'quotation',
                 refNo: 'UB/QT/2026/0088',
                 date: Utils.getToday(),
-                title: 'COMMERCIAL QUOTATION / বাণিজ্যিক দরপত্র',
+                title: 'COMMERCIAL QUOTATION',
                 subtitle: 'Metal, Electrical & Gas Supply Solutions',
                 recipient: {
-                    name: 'জনাব মোহাম্মদ মোস্তফা কামাল (প্রজেক্ট ডিরেক্টর)',
-                    org: 'মেঘনা টেক্সটাইল অ্যান্ড স্টিল লিমিটেড',
-                    address: 'প্লট ৪২, সিইপিজেড শিল্প এলাকা, চট্টগ্রাম',
-                    phone: '+8801711 234567'
+                    name: 'Engr. M. A. Karim (Project Director)',
+                    org: 'Meghna Textile & Steel Ltd.',
+                    address: 'Plot 42, CEPZ Industrial Area, Chattogram',
+                    phone: '+880 1711 234567'
                 },
-                subject: 'কারখানা আধুনিকায়ন প্রকল্পের জন্য মেটাল ও ইলেকট্রিক সামগ্রী সরবরাহ দরপত্র',
-                body: 'সম্মানিত মহোদয়, আপনার পত্র নং MT-459 এর প্রেক্ষিতে আমরা অত্যন্ত আনন্দের সাথে আপনার চাহিদামাফিক মালামালের বিস্তারিত বিবরণ এবং সর্বনিম্ন মূল্যতালিকা নিচে উপস্থাপন করছি। আমরা আন্তর্জাতিক মানসম্পন্ন পণ্য সরবরাহে প্রতিশ্রুতিবদ্ধ।',
+                subject: 'Quotation for Supply of Industrial Metal, Gas & Electrical Materials',
+                body: 'Dear Sir,\nWith reference to your inquiry, we are pleased to submit our best competitive quotation with detailed specifications and lowest prices below for your kind consideration. We are committed to ensuring international quality standards and prompt delivery.',
                 items: [
-                    { desc: 'হাই-প্রেসার গ্যাস রেগুলেটর ভালভ (Model: G-204)', qty: 5, unit: 'Pcs', rate: 4500, total: 22500 },
-                    { desc: 'হেভি-ডিউটি কপার কেবল (3Core 16sqmm - 100m Roll)', qty: 8, unit: 'Rolls', rate: 18500, total: 148000 },
-                    { desc: 'এসএস মেটাল পাইপ (Grade 304, 2-inch, 20ft)', qty: 25, unit: 'Pcs', rate: 3200, total: 80000 },
-                    { desc: 'ইন্ডাস্ট্রিয়াল গ্যাস ফ্লো-মিটার সেন্সর', qty: 2, unit: 'Sets', rate: 38000, total: 76000 },
-                    { desc: 'সার্কিট ব্রেকার ও কন্ট্রোল প্যানেল বক্স (IP65)', qty: 4, unit: 'Units', rate: 12500, total: 50000 }
+                    { desc: 'High Pressure Gas Regulator Valve (Model: G-204)', qty: 5, unit: 'Pcs', rate: 4500, total: 22500 },
+                    { desc: 'Heavy-Duty Copper Cable (3Core 16sqmm - 100m Roll)', qty: 8, unit: 'Rolls', rate: 18500, total: 148000 },
+                    { desc: 'SS Metal Seamless Pipe (Grade 304, 2-inch, 20ft)', qty: 25, unit: 'Pcs', rate: 3200, total: 80000 },
+                    { desc: 'Industrial Gas Flow-Meter Sensor Unit', qty: 2, unit: 'Sets', rate: 38000, total: 76000 },
+                    { desc: 'Circuit Breaker & Control Panel Box (IP65)', qty: 4, unit: 'Units', rate: 12500, total: 50000 }
                 ],
                 discount: 5000,
                 vat: 0,
-                notes: '১. এই দরপত্রের মেয়াদ ইস্যু তারিখ হতে ৩০ দিন পর্যন্ত বলবৎ থাকবে।\n২. মালামাল চট্টগ্রাম সাইটে পৌঁছানোর পরিবহন খরচ কোম্পানি বহন করবে।\n৩. কার্যাদেশ প্রাপ্তির ১৫ কার্যদিবসের মধ্যে সরবরাহ সম্পন্ন হবে।\n৪. পরিশোধের শর্তাবলী: ৫০% অগ্রিম এবং অবশিষ্ট ৫০% মালামাল বুঝে পাওয়ার পর চেকে মারফত।',
-                preparedBy: 'ইঞ্জিনিয়ার মারজান (বিক্রয় ও প্রকল্প)',
-                authorizedBy: 'ব্যবস্থাপনা পরিচালক, US BENGOL'
+                notes: '1. Validity: This quotation is valid for 30 days from issuance date.\n2. Delivery: Within 15 working days upon receipt of formal work order.\n3. Transportation: Delivery to project site will be arranged by the company.\n4. Payment Terms: 50% advance with work order, remaining 50% upon delivery of goods.',
+                preparedBy: 'Engr. Marjan (Sales & Project)',
+                authorizedBy: 'Managing Director, US BENGOL'
             };
 
             const sampleNotice = {
@@ -2579,22 +2587,22 @@ const CompanyDocuments = {
                 type: 'notice',
                 refNo: 'UB/ADM/2026/014',
                 date: Utils.getToday(),
-                title: 'OFFICIAL NOTICE / নোটিশ',
+                title: 'OFFICIAL NOTICE',
                 subtitle: 'US BENGOL Internal Office Communication',
                 recipient: {
-                    name: 'সকল বিভাগীয় প্রধান ও কর্মকর্তা-কর্মচারী',
+                    name: 'All Department Heads & Staff Members',
                     org: 'US BENGOL Manufacturing & Operations',
-                    address: 'উত্তরা ও টঙ্গী কারখানা শাখা, ঢাকা',
-                    phone: '+8801921 692008'
+                    address: 'Uttara & Tongi Plant Branches, Dhaka',
+                    phone: '+880 1921 692008'
                 },
-                subject: 'কারখানা নিরাপত্তা ও হাজিরা সংক্রান্ত নির্দেশনা',
-                body: 'এতদ্বারা US BENGOL-এর সকল কর্মকর্তা ও কর্মচারীকে জানানো যাচ্ছে যে, আগামী ১৫ অক্টোবর ২০২৬ তারিখ থেকে নতুন ডিজিটাল হাজিরা সিস্টেমে এবং সুরক্ষা প্রটোকল কার্যকর হবে। নির্ধারিত কর্মসময়ের মধ্যে ডিজিটাল হাজিরা সম্পন্ন করতে সকলকে অনুরোধ করা হচ্ছে।',
+                subject: 'Notice on Safety Protocols and Digital Attendance System',
+                body: 'All officers and employees of US BENGOL are hereby informed that the enhanced digital attendance system and upgraded factory safety guidelines are now fully operational. Everyone is requested to adhere to company schedules strictly.',
                 items: [],
                 discount: 0,
                 vat: 0,
-                notes: '১. সকল শাখা ব্যবস্থাপক নিশ্চিত করবেন।\n২. জরুরি প্রয়োজনে প্রধান কার্যালয়ে যোগাযোগ করুন।',
-                preparedBy: 'প্রশাসন বিভাগ, US BENGOL',
-                authorizedBy: 'ব্যবস্থাপনা পরিচালক, US BENGOL'
+                notes: '1. All department heads must ensure strict compliance.\n2. For urgent inquiries, contact the central administration.',
+                preparedBy: 'Administration Dept., US BENGOL',
+                authorizedBy: 'Managing Director, US BENGOL'
             };
 
             DB.addDocument(sampleQuotation);
@@ -2635,10 +2643,10 @@ const CompanyDocuments = {
             typeSelect.addEventListener('change', (e) => {
                 const titleInput = document.getElementById('doc-title');
                 const t = e.target.value;
-                if (t === 'quotation') titleInput.value = 'COMMERCIAL QUOTATION / বাণিজ্যিক দরপত্র';
-                else if (t === 'invoice') titleInput.value = 'OFFICIAL INVOICE / চালান ও বিল';
-                else if (t === 'letter') titleInput.value = 'OFFICIAL LETTER / অফিসিয়াল পত্র';
-                else if (t === 'notice') titleInput.value = 'OFFICIAL NOTICE / নোটিশ';
+                if (t === 'quotation') titleInput.value = 'COMMERCIAL QUOTATION';
+                else if (t === 'invoice') titleInput.value = 'OFFICIAL INVOICE';
+                else if (t === 'letter') titleInput.value = 'OFFICIAL COMPANY LETTER';
+                else if (t === 'notice') titleInput.value = 'OFFICIAL NOTICE';
             });
         }
 
@@ -2666,6 +2674,49 @@ const CompanyDocuments = {
         const btnPqAddItem = document.getElementById('btn-pq-add-item');
         if (btnPqAddItem) btnPqAddItem.addEventListener('click', () => this.addPageItemRow());
 
+        // Robust Event Delegation on #pq-items-container for live calculations & row deletion
+        const pqContainer = document.getElementById('pq-items-container');
+        if (pqContainer) {
+            pqContainer.addEventListener('input', (e) => {
+                if (e.target.matches('.pq-item-qty, .pq-item-rate')) {
+                    const row = e.target.closest('.pq-item-row');
+                    if (row) {
+                        const q = parseFloat(row.querySelector('.pq-item-qty')?.value) || 0;
+                        const r = parseFloat(row.querySelector('.pq-item-rate')?.value) || 0;
+                        const tot = q * r;
+                        const display = row.querySelector('.pq-item-total-display');
+                        if (display) display.textContent = tot.toLocaleString('en-US', { minimumFractionDigits: 2 });
+                        this.calculatePageTotals();
+                    }
+                }
+            });
+
+            pqContainer.addEventListener('click', (e) => {
+                const btn = e.target.closest('.btn-remove-pq-row');
+                if (btn) {
+                    const row = btn.closest('.pq-item-row');
+                    if (row) {
+                        const allRows = pqContainer.querySelectorAll('.pq-item-row');
+                        if (allRows.length > 1) {
+                            row.remove();
+                        } else {
+                            const desc = row.querySelector('.pq-item-desc');
+                            if (desc) desc.value = '';
+                            const qty = row.querySelector('.pq-item-qty');
+                            if (qty) qty.value = 1;
+                            const unit = row.querySelector('.pq-item-unit');
+                            if (unit) unit.value = 'Pcs';
+                            const rate = row.querySelector('.pq-item-rate');
+                            if (rate) rate.value = 0;
+                            const display = row.querySelector('.pq-item-total-display');
+                            if (display) display.textContent = '0.00';
+                        }
+                        this.calculatePageTotals();
+                    }
+                }
+            });
+        }
+
         // Page Discount & VAT live calculation
         const pqDiscInput = document.getElementById('pq-discount');
         if (pqDiscInput) pqDiscInput.addEventListener('input', () => this.calculatePageTotals());
@@ -2678,10 +2729,10 @@ const CompanyDocuments = {
             pqTypeSelect.addEventListener('change', (e) => {
                 const titleInput = document.getElementById('pq-doc-title');
                 const t = e.target.value;
-                if (t === 'quotation') titleInput.value = 'COMMERCIAL QUOTATION / বাণিজ্যিক দরপত্র';
-                else if (t === 'invoice') titleInput.value = 'OFFICIAL INVOICE / চালান ও বিল';
-                else if (t === 'letter') titleInput.value = 'OFFICIAL LETTER / অফিসিয়াল পত্র';
-                else if (t === 'notice') titleInput.value = 'OFFICIAL NOTICE / নোটিশ';
+                if (t === 'quotation') titleInput.value = 'COMMERCIAL QUOTATION';
+                else if (t === 'invoice') titleInput.value = 'OFFICIAL INVOICE';
+                else if (t === 'letter') titleInput.value = 'OFFICIAL COMPANY LETTER';
+                else if (t === 'notice') titleInput.value = 'OFFICIAL NOTICE';
             });
         }
     },
@@ -2726,17 +2777,18 @@ const CompanyDocuments = {
             }
         }
 
-        // New Document
+        // New Document (Defaults in English)
         document.getElementById('doc-id').value = '';
         document.getElementById('doc-type').value = 'quotation';
         document.getElementById('doc-ref').value = `UB/QT/${new Date().getFullYear()}/${String(Math.floor(Math.random() * 900) + 100)}`;
         document.getElementById('doc-date').value = Utils.getToday();
-        document.getElementById('doc-title').value = 'COMMERCIAL QUOTATION / বাণিজ্যিক দরপত্র';
+        document.getElementById('doc-title').value = 'COMMERCIAL QUOTATION';
         document.getElementById('doc-subtitle').value = 'Metal, Electrical & Gas Supply Solutions';
-        document.getElementById('doc-prepared-by').value = 'ইঞ্জিনিয়ার মারজান';
-        document.getElementById('doc-authorized-by').value = 'ব্যবস্থাপনা পরিচালক, US BENGOL';
+        document.getElementById('doc-prepared-by').value = 'Engr. Marjan (Sales & Project)';
+        document.getElementById('doc-authorized-by').value = 'Managing Director, US BENGOL';
         document.getElementById('doc-discount').value = 0;
         document.getElementById('doc-vat').value = 0;
+        document.getElementById('doc-notes').value = '1. Validity: This quotation is valid for 30 days from issuance date.\n2. Delivery: Within 15 working days upon receipt of formal work order.\n3. Transportation: Delivery to project site will be arranged by the company.\n4. Payment Terms: 50% advance with work order, remaining 50% upon delivery of goods.';
 
         this.addItemRow();
         this.addItemRow();
@@ -2751,21 +2803,21 @@ const CompanyDocuments = {
         const row = document.createElement('div');
         row.className = 'doc-item-row';
         row.innerHTML = `
-            <div style="flex:3;">
-                <input type="text" class="item-desc" placeholder="পণ্যের বিবরণ *" value="${item ? (item.desc || '') : ''}" required>
+            <div style="grid-column: 1 / 2;">
+                <input type="text" class="item-desc" placeholder="Item description / specification *" value="${item ? (this._escapeHtml(item.desc) || '') : ''}">
             </div>
-            <div style="flex:1;">
-                <input type="number" class="item-qty" placeholder="পরিমাণ" value="${item ? (item.qty || 1) : 1}" min="0" step="any" required>
+            <div>
+                <input type="number" class="item-qty" placeholder="Qty" value="${item ? (item.qty || 1) : 1}" min="0" step="any">
             </div>
-            <div style="flex:1;">
-                <input type="text" class="item-unit" placeholder="একক (Pcs/Kg)" value="${item ? (item.unit || 'Pcs') : 'Pcs'}">
+            <div>
+                <input type="text" class="item-unit" placeholder="Unit" value="${item ? (this._escapeHtml(item.unit) || 'Pcs') : 'Pcs'}">
             </div>
-            <div style="flex:1.5;">
-                <input type="number" class="item-rate" placeholder="দর (BDT)" value="${item ? (item.rate || 0) : 0}" min="0" step="any" required>
+            <div>
+                <input type="number" class="item-rate" placeholder="Rate (BDT)" value="${item ? (item.rate || 0) : 0}" min="0" step="any">
             </div>
-            <div style="flex:1.5; display:flex; align-items:center; justify-content:flex-end;">
+            <div style="display:flex; align-items:center; justify-content:flex-end;">
                 <span class="item-total-display" style="font-weight:600; font-size:13px; color:var(--text-primary); margin-right:8px;">0.00</span>
-                <button type="button" class="btn-remove-row" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:16px; padding:2px 6px;">&times;</button>
+                <button type="button" class="btn-remove-row" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:18px; line-height:1; padding:2px 6px;">&times;</button>
             </div>
         `;
 
@@ -2795,8 +2847,8 @@ const CompanyDocuments = {
         const rows = document.querySelectorAll('.doc-item-row');
         let subtotal = 0;
         rows.forEach(r => {
-            const q = parseFloat(r.querySelector('.item-qty').value) || 0;
-            const rt = parseFloat(r.querySelector('.item-rate').value) || 0;
+            const q = parseFloat(r.querySelector('.item-qty')?.value) || 0;
+            const rt = parseFloat(r.querySelector('.item-rate')?.value) || 0;
             subtotal += (q * rt);
         });
 
@@ -2815,10 +2867,10 @@ const CompanyDocuments = {
         const id = document.getElementById('doc-id').value;
         const items = [];
         document.querySelectorAll('.doc-item-row').forEach(r => {
-            const desc = r.querySelector('.item-desc').value.trim();
-            const qty = parseFloat(r.querySelector('.item-qty').value) || 0;
-            const unit = r.querySelector('.item-unit').value.trim();
-            const rate = parseFloat(r.querySelector('.item-rate').value) || 0;
+            const desc = r.querySelector('.item-desc')?.value.trim();
+            const qty = parseFloat(r.querySelector('.item-qty')?.value) || 0;
+            const unit = r.querySelector('.item-unit')?.value.trim() || 'Pcs';
+            const rate = parseFloat(r.querySelector('.item-rate')?.value) || 0;
             if (desc) {
                 items.push({ desc, qty, unit, rate, total: qty * rate });
             }
@@ -2827,9 +2879,9 @@ const CompanyDocuments = {
         return {
             id: id || undefined,
             type: document.getElementById('doc-type').value,
-            refNo: document.getElementById('doc-ref').value.trim(),
-            date: document.getElementById('doc-date').value,
-            title: document.getElementById('doc-title').value.trim(),
+            refNo: document.getElementById('doc-ref').value.trim() || `UB/QT/${new Date().getFullYear()}/001`,
+            date: document.getElementById('doc-date').value || Utils.getToday(),
+            title: document.getElementById('doc-title').value.trim() || 'COMMERCIAL QUOTATION',
             subtitle: document.getElementById('doc-subtitle').value.trim(),
             recipient: {
                 name: document.getElementById('doc-recipient-name').value.trim(),
@@ -2853,13 +2905,14 @@ const CompanyDocuments = {
         const data = this._getFormData();
         if (data.id) {
             DB.updateDocument(data.id, data);
-            UI.toast('ডকুমেন্ট সফলভাবে আপডেট হয়েছে!', 'success');
+            UI.toast('Document updated successfully!', 'success');
         } else {
             DB.addDocument(data);
-            UI.toast('নতুন ডকুমেন্ট সফলভাবে সংরক্ষিত হয়েছে!', 'success');
+            UI.toast('New document saved successfully!', 'success');
         }
         UI.closeModal('modal-doc-builder');
         this.renderList();
+        this.renderSavedList();
     },
 
     previewCurrentForm() {
@@ -2878,25 +2931,25 @@ const CompanyDocuments = {
         if (!container) return;
 
         const subtotal = (docData.items || []).reduce((s, it) => s + (it.total || 0), 0);
-        const grandTotal = subtotal + (docData.vat || 0) - (docData.discount || 0);
+        const grandTotal = Math.max(0, subtotal + (docData.vat || 0) - (docData.discount || 0));
 
         const itemsHtml = (docData.items && docData.items.length > 0) ? `
             <table class="pad-preview-table" style="width:100%; border-collapse:collapse; margin-top:12px; font-size:12px;">
                 <thead>
                     <tr style="background:#1b365d; color:#ffffff; text-align:center;">
-                        <th style="padding:6px; border:1px solid #cbd5e1; width:35px;">ক্রমিক</th>
-                        <th style="padding:6px; border:1px solid #cbd5e1; text-align:left;">বিবরণ</th>
-                        <th style="padding:6px; border:1px solid #cbd5e1; width:70px;">পরিমাণ</th>
-                        <th style="padding:6px; border:1px solid #cbd5e1; width:80px; text-align:right;">দর (BDT)</th>
-                        <th style="padding:6px; border:1px solid #cbd5e1; width:90px; text-align:right;">মোট (BDT)</th>
+                        <th style="padding:6px; border:1px solid #cbd5e1; width:35px;">SL</th>
+                        <th style="padding:6px; border:1px solid #cbd5e1; text-align:left;">ITEM DESCRIPTION</th>
+                        <th style="padding:6px; border:1px solid #cbd5e1; width:70px;">QTY</th>
+                        <th style="padding:6px; border:1px solid #cbd5e1; width:90px; text-align:right;">UNIT PRICE (BDT)</th>
+                        <th style="padding:6px; border:1px solid #cbd5e1; width:95px; text-align:right;">TOTAL (BDT)</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${docData.items.map((it, idx) => `
                         <tr style="background:${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; color:#334155;">
                             <td style="padding:5px; border:1px solid #e2e8f0; text-align:center;">${idx + 1}</td>
-                            <td style="padding:5px; border:1px solid #e2e8f0;">${it.desc}</td>
-                            <td style="padding:5px; border:1px solid #e2e8f0; text-align:center;">${it.qty} ${it.unit || ''}</td>
+                            <td style="padding:5px; border:1px solid #e2e8f0;">${this._escapeHtml(it.desc)}</td>
+                            <td style="padding:5px; border:1px solid #e2e8f0; text-align:center;">${it.qty} ${this._escapeHtml(it.unit || '')}</td>
                             <td style="padding:5px; border:1px solid #e2e8f0; text-align:right;">${Number(it.rate).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                             <td style="padding:5px; border:1px solid #e2e8f0; text-align:right; font-weight:600;">${Number(it.total).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                         </tr>
@@ -2904,25 +2957,25 @@ const CompanyDocuments = {
                 </tbody>
             </table>
             <div style="display:flex; justify-content:flex-end; margin-top:8px;">
-                <div style="width:250px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; padding:8px; font-size:12px;">
+                <div style="width:260px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; padding:8px; font-size:12px;">
                     <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                        <span>উপ-মোট / Subtotal:</span>
+                        <span>Subtotal:</span>
                         <span>${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                     </div>
                     ${docData.discount > 0 ? `
                         <div style="display:flex; justify-content:space-between; margin-bottom:4px; color:#e11d48;">
-                            <span>ছাড় / Discount:</span>
+                            <span>Discount:</span>
                             <span>- ${Number(docData.discount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                         </div>
                     ` : ''}
                     ${docData.vat > 0 ? `
                         <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                            <span>ভ্যাট / VAT:</span>
+                            <span>VAT / Tax:</span>
                             <span>+ ${Number(docData.vat).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                         </div>
                     ` : ''}
                     <div style="display:flex; justify-content:space-between; padding-top:4px; border-top:1px solid #008852; font-weight:bold; color:#1b365d; font-size:13px;">
-                        <span>সর্বমোট / Grand Total:</span>
+                        <span>Grand Total:</span>
                         <span>${grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })} BDT</span>
                     </div>
                 </div>
@@ -2935,38 +2988,38 @@ const CompanyDocuments = {
             <div class="pad-preview-sheet" style="background-image:url('${bgUrl}'); background-size:100% 100%; background-repeat:no-repeat; box-shadow:0 10px 25px rgba(0,0,0,0.3); margin:0 auto 20px auto; position:relative; background-color:#ffffff;">
                 <div class="pad-preview-body-zone">
                     <div style="text-align:center; margin-bottom:6px;">
-                        <h2 style="font-size:18px; color:#1b365d; margin:0 0 4px 0; font-weight:700;">${docData.title}</h2>
-                        ${docData.subtitle ? `<p style="font-size:11px; color:#64748b; margin:0;">${docData.subtitle}</p>` : ''}
+                        <h2 style="font-size:18px; color:#1b365d; margin:0 0 4px 0; font-weight:700;">${this._escapeHtml(docData.title)}</h2>
+                        ${docData.subtitle ? `<p style="font-size:11px; color:#64748b; margin:0;">${this._escapeHtml(docData.subtitle)}</p>` : ''}
                         <div style="height:2px; background:#008852; margin:6px auto 10px auto; width:100%;"></div>
                     </div>
 
                     <div style="display:flex; justify-content:space-between; font-size:11px; color:#475569; margin-bottom:10px;">
-                        <span><strong>স্মারক / Ref:</strong> ${docData.refNo}</span>
-                        <span><strong>তারিখ / Date:</strong> ${docData.date}</span>
+                        <span><strong>Ref:</strong> ${this._escapeHtml(docData.refNo)}</span>
+                        <span><strong>Date:</strong> ${this._escapeHtml(docData.date)}</span>
                     </div>
 
                     ${(docData.recipient && (docData.recipient.name || docData.recipient.org)) ? `
                         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; padding:8px 12px; margin-bottom:10px; font-size:11px;">
                             <div style="display:flex; justify-content:space-between;">
                                 <div>
-                                    <strong style="color:#1e293b;">প্রাপক / To: ${docData.recipient.name || ''}</strong>
-                                    ${docData.recipient.org ? `<div>${docData.recipient.org}</div>` : ''}
-                                    ${docData.recipient.address ? `<div>${docData.recipient.address}</div>` : ''}
+                                    <strong style="color:#1e293b;">To / Attention: ${this._escapeHtml(docData.recipient.name || '')}</strong>
+                                    ${docData.recipient.org ? `<div>${this._escapeHtml(docData.recipient.org)}</div>` : ''}
+                                    ${docData.recipient.address ? `<div>${this._escapeHtml(docData.recipient.address)}</div>` : ''}
                                 </div>
-                                ${docData.recipient.phone ? `<div style="color:#475569;">মোবাইল: ${docData.recipient.phone}</div>` : ''}
+                                ${docData.recipient.phone ? `<div style="color:#475569;">Contact: ${this._escapeHtml(docData.recipient.phone)}</div>` : ''}
                             </div>
                         </div>
                     ` : ''}
 
                     ${docData.subject ? `
                         <div style="font-size:13px; font-weight:700; color:#1b365d; margin-bottom:8px;">
-                            বিষয় / Subject: ${docData.subject}
+                            Subject: ${this._escapeHtml(docData.subject)}
                         </div>
                     ` : ''}
 
                     ${docData.body ? `
                         <div style="font-size:11.5px; line-height:1.6; color:#334155; margin-bottom:10px; white-space:pre-wrap;">
-                            ${docData.body}
+                            ${this._escapeHtml(docData.body)}
                         </div>
                     ` : ''}
 
@@ -2974,17 +3027,17 @@ const CompanyDocuments = {
 
                     ${docData.notes ? `
                         <div style="margin-top:12px; font-size:11px; color:#64748b; background:#fafafa; border-left:3px solid #008852; padding:6px 10px;">
-                            <strong>শর্তাবলী / Terms & Conditions:</strong>
-                            <div style="white-space:pre-wrap; margin-top:2px;">${docData.notes}</div>
+                            <strong>Terms & Conditions:</strong>
+                            <div style="white-space:pre-wrap; margin-top:2px;">${this._escapeHtml(docData.notes)}</div>
                         </div>
                     ` : ''}
 
                     <div style="display:flex; justify-content:space-between; margin-top:40px; padding:0 20px;">
                         <div style="text-align:center; border-top:1px solid #94a3b8; width:160px; padding-top:4px; font-size:11px; color:#475569;">
-                            ${docData.preparedBy || 'প্রস্তুতকারক / Prepared By'}
+                            ${this._escapeHtml(docData.preparedBy) || 'Prepared By'}
                         </div>
                         <div style="text-align:center; border-top:1px solid #94a3b8; width:160px; padding-top:4px; font-size:11px; color:#475569;">
-                            ${docData.authorizedBy || 'অনুমোদনকারী / Authorized Signatory'}
+                            ${this._escapeHtml(docData.authorizedBy) || 'Authorized Signatory'}
                         </div>
                     </div>
                 </div>
@@ -3002,17 +3055,17 @@ const CompanyDocuments = {
         if (docs.length === 0) {
             container.innerHTML = `
                 <div class="empty-state" style="padding:24px; text-align:center; color:var(--text-secondary);">
-                    <p>কোনো সংরক্ষিত ডকুমেন্ট নেই। উপরের "+ নতুন ডকুমেন্ট" বোতামে ক্লিক করুন।</p>
+                    <p>No saved documents. Click "+ New Document" above.</p>
                 </div>
             `;
             return;
         }
 
         const typeLabels = {
-            quotation: 'বাণিজ্যিক দরপত্র',
-            invoice: 'বিল / ইনভয়েস',
-            letter: 'অফিসিয়াল চিঠি',
-            notice: 'নোটিশ'
+            quotation: 'Quotation',
+            invoice: 'Invoice',
+            letter: 'Letter',
+            notice: 'Notice'
         };
 
         const typeBadges = {
@@ -3026,36 +3079,36 @@ const CompanyDocuments = {
             <table class="data-table documents-table" style="width:100%; border-collapse:collapse;">
                 <thead>
                     <tr>
-                        <th>স্মারক / Ref</th>
-                        <th>ধরন</th>
-                        <th>শিরোনাম ও প্রাপক</th>
-                        <th>তারিখ</th>
-                        <th style="text-align:right;">অ্যাকশন</th>
+                        <th>Ref No</th>
+                        <th>Type</th>
+                        <th>Title & Recipient</th>
+                        <th>Date</th>
+                        <th style="text-align:right;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${docs.map(d => {
-                        const recName = d.recipient?.name || d.recipient?.org || 'সাধারণ';
+                        const recName = d.recipient?.name || d.recipient?.org || 'General';
                         return `
                             <tr>
-                                <td><strong style="color:var(--primary);">${d.refNo}</strong></td>
+                                <td><strong style="color:var(--primary);">${this._escapeHtml(d.refNo)}</strong></td>
                                 <td><span class="badge ${typeBadges[d.type] || 'badge-primary'}">${typeLabels[d.type] || d.type}</span></td>
                                 <td>
-                                    <div style="font-weight:600; font-size:13px;">${d.title}</div>
-                                    <div style="font-size:11px; color:var(--text-secondary);">${recName}</div>
+                                    <div style="font-weight:600; font-size:13px;">${this._escapeHtml(d.title)}</div>
+                                    <div style="font-size:11px; color:var(--text-secondary);">${this._escapeHtml(recName)}</div>
                                 </td>
                                 <td><small>${d.date}</small></td>
                                 <td style="text-align:right; white-space:nowrap;">
-                                    <button class="btn btn-xs btn-outline" onclick="CompanyDocuments.previewById('${d.id}')" title="প্রিভিউ">
-                                        প্রিভিউ
+                                    <button class="btn btn-xs btn-outline" onclick="CompanyDocuments.previewById('${d.id}')" title="Preview">
+                                        Preview
                                     </button>
-                                    <button class="btn btn-xs btn-primary" onclick="CompanyDocuments.downloadById('${d.id}')" title="PDF ডাউনলোড">
+                                    <button class="btn btn-xs btn-primary" onclick="CompanyDocuments.downloadById('${d.id}')" title="Download PDF">
                                         PDF
                                     </button>
-                                    <button class="btn btn-xs btn-outline" onclick="CompanyDocuments.openBuilder('${d.id}')" title="এডিট">
-                                        এডিট
+                                    <button class="btn btn-xs btn-outline" onclick="CompanyDocuments.openBuilder('${d.id}')" title="Edit">
+                                        Edit
                                     </button>
-                                    <button class="btn btn-xs btn-danger" onclick="CompanyDocuments.deleteById('${d.id}')" title="মুছুন">
+                                    <button class="btn btn-xs btn-danger" onclick="CompanyDocuments.deleteById('${d.id}')" title="Delete">
                                         &times;
                                     </button>
                                 </td>
@@ -3098,6 +3151,11 @@ const CompanyDocuments = {
             dateInput.value = Utils.getToday();
         }
 
+        const titleInput = document.getElementById('pq-doc-title');
+        if (titleInput && !titleInput.value.trim()) {
+            titleInput.value = 'COMMERCIAL QUOTATION';
+        }
+
         const container = document.getElementById('pq-items-container');
         if (container && container.children.length === 0) {
             this.addPageItemRow();
@@ -3117,7 +3175,7 @@ const CompanyDocuments = {
         document.getElementById('pq-doc-type').value = 'quotation';
         document.getElementById('pq-doc-ref').value = `UB/QT/${new Date().getFullYear()}/${String(Math.floor(Math.random() * 900) + 100)}`;
         document.getElementById('pq-doc-date').value = Utils.getToday();
-        document.getElementById('pq-doc-title').value = 'COMMERCIAL QUOTATION / বাণিজ্যিক দরপত্র';
+        document.getElementById('pq-doc-title').value = 'COMMERCIAL QUOTATION';
         document.getElementById('pq-doc-subtitle').value = 'Metal, Electrical & Gas Supply Solutions';
         document.getElementById('pq-recipient-name').value = '';
         document.getElementById('pq-recipient-org').value = '';
@@ -3127,9 +3185,9 @@ const CompanyDocuments = {
         document.getElementById('pq-doc-body').value = '';
         document.getElementById('pq-discount').value = 0;
         document.getElementById('pq-vat').value = 0;
-        document.getElementById('pq-doc-notes').value = '১. এই দরপত্রের মেয়াদ ইস্যু তারিখ হতে ৩০ দিন পর্যন্ত বলবৎ থাকবে।\n২. মালামাল চট্টগ্রাম সাইটে পৌঁছানোর পরিবহন খরচ কোম্পানি বহন করবে।\n৩. কার্যাদেশ প্রাপ্তির ১৫ কার্যদিবসের মধ্যে সরবরাহ সম্পন্ন হবে।\n৪. পরিশোধের শর্তাবলী: ৫০% অগ্রিম এবং অবশিষ্ট ৫০% মালামাল বুঝে পাওয়ার পর চেক মারফত।';
-        document.getElementById('pq-prepared-by').value = 'ইঞ্জিনিয়ার মারজান (বিক্রয় ও প্রকল্প)';
-        document.getElementById('pq-authorized-by').value = 'ব্যবস্থাপনা পরিচালক, US BENGOL';
+        document.getElementById('pq-doc-notes').value = '1. Validity: This quotation is valid for 30 days from issuance date.\n2. Delivery: Within 15 working days upon receipt of formal work order.\n3. Transportation: Delivery to project site will be arranged by the company.\n4. Payment Terms: 50% advance with work order, remaining 50% upon delivery of goods.';
+        document.getElementById('pq-prepared-by').value = 'Engr. Marjan (Sales & Project)';
+        document.getElementById('pq-authorized-by').value = 'Managing Director, US BENGOL';
 
         const container = document.getElementById('pq-items-container');
         if (container) {
@@ -3141,7 +3199,7 @@ const CompanyDocuments = {
 
         const formCard = document.getElementById('form-page-quotation');
         if (formCard) formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        UI.toast('নতুন কোটেশন ফর্ম প্রস্তুত করা হয়েছে', 'info');
+        UI.toast('New quotation form initialized', 'info');
     },
 
     addPageItemRow(item = null) {
@@ -3151,23 +3209,23 @@ const CompanyDocuments = {
         const row = document.createElement('div');
         row.className = 'pq-item-row';
         row.innerHTML = `
-            <div>
-                <input type="text" class="pq-item-desc" placeholder="পণ্যের বিবরণ *" value="${item ? (this._escapeHtml(item.desc) || '') : ''}" required style="width:100%; padding:7px 9px; font-size:12.5px;">
+            <div class="pq-col-desc">
+                <input type="text" class="pq-item-desc" placeholder="Item description / specification *" value="${item ? (this._escapeHtml(item.desc) || '') : ''}" autocomplete="off">
             </div>
-            <div>
-                <input type="number" class="pq-item-qty" placeholder="পরিমাণ" value="${item ? (item.qty || 1) : 1}" min="0" step="any" required style="width:100%; padding:7px 6px; font-size:12.5px; text-align:center;">
+            <div class="pq-col-qty">
+                <input type="number" class="pq-item-qty" placeholder="Qty" value="${item ? (item.qty || 1) : 1}" min="0" step="any">
             </div>
-            <div>
-                <input type="text" class="pq-item-unit" placeholder="একক" value="${item ? (this._escapeHtml(item.unit) || 'Pcs') : 'Pcs'}" style="width:100%; padding:7px 6px; font-size:12.5px; text-align:center;">
+            <div class="pq-col-unit">
+                <input type="text" class="pq-item-unit" placeholder="Unit" value="${item ? (this._escapeHtml(item.unit) || 'Pcs') : 'Pcs'}">
             </div>
-            <div>
-                <input type="number" class="pq-item-rate" placeholder="দর" value="${item ? (item.rate || 0) : 0}" min="0" step="any" required style="width:100%; padding:7px 8px; font-size:12.5px; text-align:right;">
+            <div class="pq-col-rate">
+                <input type="number" class="pq-item-rate" placeholder="Rate (BDT)" value="${item ? (item.rate || 0) : 0}" min="0" step="any">
             </div>
-            <div style="text-align:right; font-weight:600; font-size:13px; color:var(--text-primary);">
-                <span class="pq-item-total-display">0.00</span>
+            <div class="pq-col-total">
+                <span class="pq-item-total-display">${Number(item ? ((item.qty || 1) * (item.rate || 0)) : 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
             </div>
-            <div style="text-align:center;">
-                <button type="button" class="btn-remove-pq-row" title="আইটেম মুছুন" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:18px; line-height:1; padding:2px 4px;">&times;</button>
+            <div class="pq-col-action">
+                <button type="button" class="btn-remove-pq-row" title="Remove Item">&times;</button>
             </div>
         `;
 
@@ -3185,7 +3243,20 @@ const CompanyDocuments = {
         rateInput.addEventListener('input', updateRowTotal);
 
         row.querySelector('.btn-remove-pq-row').addEventListener('click', () => {
-            row.remove();
+            const allRows = container.querySelectorAll('.pq-item-row');
+            if (allRows.length > 1) {
+                row.remove();
+            } else {
+                const desc = row.querySelector('.pq-item-desc');
+                if (desc) desc.value = '';
+                const qty = row.querySelector('.pq-item-qty');
+                if (qty) qty.value = 1;
+                const unit = row.querySelector('.pq-item-unit');
+                if (unit) unit.value = 'Pcs';
+                const rate = row.querySelector('.pq-item-rate');
+                if (rate) rate.value = 0;
+                row.querySelector('.pq-item-total-display').textContent = '0.00';
+            }
             this.calculatePageTotals();
         });
 
@@ -3197,8 +3268,8 @@ const CompanyDocuments = {
         const rows = document.querySelectorAll('#pq-items-container .pq-item-row');
         let subtotal = 0;
         rows.forEach(r => {
-            const q = parseFloat(r.querySelector('.pq-item-qty').value) || 0;
-            const rt = parseFloat(r.querySelector('.pq-item-rate').value) || 0;
+            const q = parseFloat(r.querySelector('.pq-item-qty')?.value) || 0;
+            const rt = parseFloat(r.querySelector('.pq-item-rate')?.value) || 0;
             subtotal += (q * rt);
         });
 
@@ -3217,10 +3288,10 @@ const CompanyDocuments = {
         const id = document.getElementById('pq-doc-id').value;
         const items = [];
         document.querySelectorAll('#pq-items-container .pq-item-row').forEach(r => {
-            const desc = r.querySelector('.pq-item-desc').value.trim();
-            const qty = parseFloat(r.querySelector('.pq-item-qty').value) || 0;
-            const unit = r.querySelector('.pq-item-unit').value.trim();
-            const rate = parseFloat(r.querySelector('.pq-item-rate').value) || 0;
+            const desc = r.querySelector('.pq-item-desc')?.value.trim();
+            const qty = parseFloat(r.querySelector('.pq-item-qty')?.value) || 0;
+            const unit = r.querySelector('.pq-item-unit')?.value.trim() || 'Pcs';
+            const rate = parseFloat(r.querySelector('.pq-item-rate')?.value) || 0;
             if (desc) {
                 items.push({ desc, qty, unit, rate, total: qty * rate });
             }
@@ -3231,7 +3302,7 @@ const CompanyDocuments = {
             type: document.getElementById('pq-doc-type').value,
             refNo: document.getElementById('pq-doc-ref').value.trim() || `UB/QT/${new Date().getFullYear()}/001`,
             date: document.getElementById('pq-doc-date').value || Utils.getToday(),
-            title: document.getElementById('pq-doc-title').value.trim() || 'COMMERCIAL QUOTATION / বাণিজ্যিক দরপত্র',
+            title: document.getElementById('pq-doc-title').value.trim() || 'COMMERCIAL QUOTATION',
             subtitle: document.getElementById('pq-doc-subtitle').value.trim(),
             recipient: {
                 name: document.getElementById('pq-recipient-name').value.trim(),
@@ -3254,18 +3325,23 @@ const CompanyDocuments = {
         if (e) e.preventDefault();
         const data = this._getPageFormData();
         if (!data.refNo) {
-            UI.toast('দয়া করে রেফারেন্স নম্বর দিন', 'warning');
+            UI.toast('Please provide a Reference Number', 'warning');
+            return;
+        }
+
+        if (!data.items || data.items.length === 0) {
+            UI.toast('Please enter at least one item description and unit price', 'warning');
             return;
         }
 
         let savedDoc;
         if (data.id) {
             savedDoc = DB.updateDocument(data.id, data);
-            UI.toast('কোটেশন সংরক্ষিত হয়েছে! PDF ডাউনলোড হচ্ছে...', 'success');
+            UI.toast('Quotation updated successfully! Generating PDF...', 'success');
         } else {
             savedDoc = DB.addDocument(data);
             document.getElementById('pq-doc-id').value = savedDoc.id;
-            UI.toast('নতুন কোটেশন সংরক্ষিত হয়েছে! PDF ডাউনলোড হচ্ছে...', 'success');
+            UI.toast('Quotation saved successfully! Generating PDF...', 'success');
         }
 
         this.renderSavedList();
@@ -3278,17 +3354,22 @@ const CompanyDocuments = {
     savePageOnly() {
         const data = this._getPageFormData();
         if (!data.refNo) {
-            UI.toast('দয়া করে রেফারেন্স নম্বর দিন', 'warning');
+            UI.toast('Please provide a Reference Number', 'warning');
+            return;
+        }
+
+        if (!data.items || data.items.length === 0) {
+            UI.toast('Please enter at least one item description and unit price', 'warning');
             return;
         }
 
         if (data.id) {
             DB.updateDocument(data.id, data);
-            UI.toast('কোটেশন সফলভাবে আপডেট হয়েছে!', 'success');
+            UI.toast('Quotation updated successfully!', 'success');
         } else {
             const saved = DB.addDocument(data);
             document.getElementById('pq-doc-id').value = saved.id;
-            UI.toast('কোটেশন খসড়া সংরক্ষিত হয়েছে!', 'success');
+            UI.toast('Quotation draft saved successfully!', 'success');
         }
 
         this.renderSavedList();
@@ -3303,7 +3384,7 @@ const CompanyDocuments = {
     loadIntoPageForm(id) {
         const doc = DB.getDocument(id);
         if (!doc) {
-            UI.toast('ডকুমেন্ট পাওয়া যায়নি!', 'error');
+            UI.toast('Document not found!', 'error');
             return;
         }
 
@@ -3316,7 +3397,7 @@ const CompanyDocuments = {
         document.getElementById('pq-doc-type').value = doc.type || 'quotation';
         document.getElementById('pq-doc-ref').value = doc.refNo || '';
         document.getElementById('pq-doc-date').value = doc.date || Utils.getToday();
-        document.getElementById('pq-doc-title').value = doc.title || '';
+        document.getElementById('pq-doc-title').value = doc.title || 'COMMERCIAL QUOTATION';
         document.getElementById('pq-doc-subtitle').value = doc.subtitle || '';
         document.getElementById('pq-recipient-name').value = doc.recipient?.name || '';
         document.getElementById('pq-recipient-org').value = doc.recipient?.org || '';
@@ -3344,7 +3425,7 @@ const CompanyDocuments = {
 
         const formCard = document.getElementById('form-page-quotation');
         if (formCard) formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        UI.toast(`কোটেশন "${doc.refNo}" এডিটের জন্য প্রস্তুত`, 'info');
+        UI.toast(`Quotation "${doc.refNo}" loaded for editing`, 'info');
     },
 
     renderSavedList() {
@@ -3356,18 +3437,18 @@ const CompanyDocuments = {
             container.innerHTML = `
                 <div class="empty-state" style="padding:28px 16px; text-align:center; color:var(--text-secondary);">
                     <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:8px; opacity:0.6;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                    <p style="margin:0; font-size:14px; font-weight:600;">কোনো সংরক্ষিত কোটেশন বা প্যাড নেই</p>
-                    <p style="margin:4px 0 0 0; font-size:12px;">উপরের ফর্মে তথ্য পূরণ করে "PDF জেনারেট ও সেভ করুন" বোতামে ক্লিক করুন।</p>
+                    <p style="margin:0; font-size:14px; font-weight:600;">No saved quotations or documents found</p>
+                    <p style="margin:4px 0 0 0; font-size:12px;">Fill in the form above and click "Generate & Save PDF" to create one.</p>
                 </div>
             `;
             return;
         }
 
         const typeLabels = {
-            quotation: 'বাণিজ্যিক দরপত্র',
-            invoice: 'বিল / ইনভয়েস',
-            letter: 'অফিসিয়াল চিঠি',
-            notice: 'নোটিশ'
+            quotation: 'Quotation',
+            invoice: 'Invoice',
+            letter: 'Letter',
+            notice: 'Notice'
         };
 
         const typeBadges = {
@@ -3382,20 +3463,20 @@ const CompanyDocuments = {
                 <table class="data-table documents-table" style="width:100%; border-collapse:collapse;">
                     <thead>
                         <tr>
-                            <th style="width:130px;">স্মারক / Ref</th>
-                            <th style="width:110px;">ধরন</th>
-                            <th>শিরোনাম ও প্রাপক</th>
-                            <th style="width:90px;">তারিখ</th>
-                            <th style="text-align:right; width:110px;">মোট টাকা</th>
-                            <th style="text-align:right; width:180px;">অ্যাকশন</th>
+                            <th style="width:130px;">Ref No</th>
+                            <th style="width:110px;">Type</th>
+                            <th>Title & Client</th>
+                            <th style="width:95px;">Date</th>
+                            <th style="text-align:right; width:115px;">Total (BDT)</th>
+                            <th style="text-align:right; width:180px;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${docs.map(d => {
-                            const recName = d.recipient?.name || d.recipient?.org || 'সাধারণ';
+                            const recName = d.recipient?.name || d.recipient?.org || 'General Client';
                             const subtotal = (d.items || []).reduce((s, it) => s + (it.total || 0), 0);
                             const grandTotal = Math.max(0, subtotal + (d.vat || 0) - (d.discount || 0));
-                            const amountStr = grandTotal > 0 ? (grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2 }) + ' ৳') : '—';
+                            const amountStr = grandTotal > 0 ? (grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2 }) + ' BDT') : '—';
                             return `
                                 <tr>
                                     <td><strong style="color:var(--primary); font-size:12.5px;">${this._escapeHtml(d.refNo)}</strong></td>
@@ -3407,16 +3488,16 @@ const CompanyDocuments = {
                                     <td><small style="color:var(--text-secondary);">${d.date}</small></td>
                                     <td style="text-align:right; font-weight:700; color:#008852;">${amountStr}</td>
                                     <td style="text-align:right; white-space:nowrap;">
-                                        <button type="button" class="btn btn-xs btn-primary" onclick="CompanyDocuments.downloadById('${d.id}')" title="PDF ডাউনলোড" style="background:#008852; border-color:#008852;">
+                                        <button type="button" class="btn btn-xs btn-primary" onclick="CompanyDocuments.downloadById('${d.id}')" title="Download PDF" style="background:#008852; border-color:#008852;">
                                             PDF
                                         </button>
-                                        <button type="button" class="btn btn-xs btn-outline" onclick="CompanyDocuments.previewById('${d.id}')" title="প্রিভিউ">
-                                            প্রিভিউ
+                                        <button type="button" class="btn btn-xs btn-outline" onclick="CompanyDocuments.previewById('${d.id}')" title="Preview">
+                                            Preview
                                         </button>
-                                        <button type="button" class="btn btn-xs btn-outline" onclick="CompanyDocuments.loadIntoPageForm('${d.id}')" title="এডিট">
-                                            এডিট
+                                        <button type="button" class="btn btn-xs btn-outline" onclick="CompanyDocuments.loadIntoPageForm('${d.id}')" title="Edit">
+                                            Edit
                                         </button>
-                                        <button type="button" class="btn btn-xs btn-danger" onclick="CompanyDocuments.deleteById('${d.id}')" title="মুছুন">
+                                        <button type="button" class="btn btn-xs btn-danger" onclick="CompanyDocuments.deleteById('${d.id}')" title="Delete">
                                             &times;
                                         </button>
                                     </td>
@@ -3432,10 +3513,10 @@ const CompanyDocuments = {
     async deleteById(id) {
         const doc = DB.getDocument(id);
         if (!doc) return;
-        const ok = await UI.confirm('ডকুমেন্ট মুছুন', `স্মারক "${doc.refNo}" স্থায়ীভাবে মুছে ফেলতে চান?`, 'মুছুন', 'btn-danger');
+        const ok = await UI.confirm('Delete Document', `Are you sure you want to permanently delete "${doc.refNo}"?`, 'Delete', 'btn-danger');
         if (ok) {
             DB.deleteDocument(id);
-            UI.toast('ডকুমেন্ট মুছে ফেলা হয়েছে!', 'success');
+            UI.toast('Document deleted successfully!', 'success');
             this.renderList();
             this.renderSavedList();
             const currId = document.getElementById('pq-doc-id');

@@ -1686,8 +1686,13 @@ img { max-width: 100%; height: auto; }
     display: flex;
     flex-direction: column;
     gap: 8px;
-    max-height: 280px;
+    max-height: 320px;
     overflow-y: auto;
+}
+
+#pq-items-container {
+    max-height: none;
+    overflow-y: visible;
 }
 
 .doc-item-row {
@@ -1702,12 +1707,16 @@ img { max-width: 100%; height: auto; }
 }
 
 .doc-item-row input {
-    padding: 6px 8px;
-    font-size: 12px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 7px 9px;
+    font-size: 13px;
     border: 1px solid var(--border);
     border-radius: 4px;
     background: var(--input-bg);
     color: var(--text-primary);
+    pointer-events: auto !important;
+    cursor: text !important;
 }
 
 .doc-item-row input:focus {
@@ -1807,18 +1816,90 @@ img { max-width: 100%; height: auto; }
 .doc-type-badge.letter { background: rgba(142, 68, 173, 0.12); color: #8e44ad; }
 .doc-type-badge.notice { background: rgba(230, 126, 34, 0.12); color: #e67e22; }
 
+.pq-items-header {
+    display: grid;
+    grid-template-columns: minmax(200px, 3.5fr) 80px 75px 115px 115px 36px;
+    gap: 8px;
+    padding: 8px 10px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+}
+
 .pq-item-row {
     display: grid;
-    grid-template-columns: 2fr 75px 65px 95px 105px 36px;
-    gap: 6px;
+    grid-template-columns: minmax(200px, 3.5fr) 80px 75px 115px 115px 36px;
+    gap: 8px;
     margin-bottom: 8px;
     align-items: center;
+}
+
+.pq-item-row input {
+    width: 100%;
+    height: 38px;
+    padding: 8px 10px;
+    font-size: 13.5px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--input-bg);
+    color: var(--text-primary);
+    box-sizing: border-box;
+    pointer-events: auto !important;
+    cursor: text !important;
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    position: relative;
+    z-index: 2;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.pq-item-row input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-bg);
+}
+
+.pq-item-row input.pq-item-desc {
+    font-weight: 500;
+}
+
+.pq-item-row .pq-item-total-display {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: block;
+    text-align: right;
+    padding-right: 4px;
+}
+
+.btn-remove-pq-row {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--danger);
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+}
+
+.btn-remove-pq-row:hover {
+    background: var(--danger-bg);
+    border-color: rgba(239, 68, 68, 0.2);
 }
 
 @media (max-width: 768px) {
     .doc-item-row {
         grid-template-columns: 1fr;
-        gap: 4px;
+        gap: 6px;
     }
     .pq-items-header {
         display: none !important;
@@ -1827,12 +1908,34 @@ img { max-width: 100%; height: auto; }
         grid-template-columns: 1fr 1fr;
         gap: 8px;
         background: var(--bg-secondary);
-        padding: 10px;
+        padding: 12px;
         border-radius: var(--radius-sm);
         border: 1px solid var(--border-light);
+        margin-bottom: 12px;
     }
-    .pq-item-row > div:first-child {
+    .pq-item-row .pq-col-desc {
         grid-column: 1 / -1;
+    }
+    .pq-item-row .pq-col-qty {
+        grid-column: 1 / 2;
+    }
+    .pq-item-row .pq-col-unit {
+        grid-column: 2 / 3;
+    }
+    .pq-item-row .pq-col-rate {
+        grid-column: 1 / -1;
+    }
+    .pq-item-row .pq-col-total {
+        grid-column: 1 / 2;
+        text-align: left;
+    }
+    .pq-item-row .pq-col-total .pq-item-total-display {
+        text-align: left;
+    }
+    .pq-item-row .pq-col-action {
+        grid-column: 2 / 3;
+        display: flex;
+        justify-content: flex-end;
     }
     .pad-preview-sheet {
         transform-origin: top center;

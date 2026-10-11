@@ -181,7 +181,7 @@
     <div id="modal-doc-builder" class="modal-overlay" style="display:none;">
         <div class="modal-content modal-lg">
             <div class="modal-header">
-                <h3 id="doc-builder-title">অফিসিয়াল প্যাড ও কোটেশন তৈরি</h3>
+                <h3 id="doc-builder-title">Official Letterhead & Quotation Builder</h3>
                 <button class="modal-close" onclick="UI.closeModal('modal-doc-builder')">&times;</button>
             </div>
             <form id="form-doc-builder" class="modal-body">
@@ -189,74 +189,74 @@
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="doc-type">ডকুমেন্টের ধরন *</label>
+                        <label for="doc-type">Document Type *</label>
                         <select id="doc-type" required>
-                            <option value="quotation">বাণিজ্যিক দরপত্র (Quotation)</option>
-                            <option value="invoice">বিল / ইনভয়েস (Invoice)</option>
-                            <option value="letter">অফিসিয়াল প্যাড চিঠি (Official Letter)</option>
-                            <option value="notice">অফিসিয়াল নোটিশ (Notice)</option>
+                            <option value="quotation">Commercial Quotation</option>
+                            <option value="invoice">Official Invoice / Bill</option>
+                            <option value="letter">Official Company Letter</option>
+                            <option value="notice">Official Notice</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="doc-ref">স্মারক / রেফারেন্স নং *</label>
-                        <input type="text" id="doc-ref" required placeholder="যেমন: UB/QT/2026/001">
+                        <label for="doc-ref">Reference No (Ref No) *</label>
+                        <input type="text" id="doc-ref" required placeholder="e.g. UB/QT/2026/001">
                     </div>
                     <div class="form-group">
-                        <label for="doc-date">তারিখ *</label>
+                        <label for="doc-date">Date (Auto-filled, Editable) *</label>
                         <input type="date" id="doc-date" required>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group" style="flex:2;">
-                        <label for="doc-title">শিরোনাম (Title) *</label>
-                        <input type="text" id="doc-title" required placeholder="যেমন: COMMERCIAL QUOTATION / বাণিজ্যিক দরপত্র">
+                        <label for="doc-title">Document Title *</label>
+                        <input type="text" id="doc-title" required placeholder="e.g. COMMERCIAL QUOTATION">
                     </div>
                     <div class="form-group" style="flex:1;">
-                        <label for="doc-subtitle">উপ-শিরোনাম (Subtitle)</label>
-                        <input type="text" id="doc-subtitle" placeholder="যেমন: Metal, Electric, Gas Solutions">
+                        <label for="doc-subtitle">Subtitle / Tagline</label>
+                        <input type="text" id="doc-subtitle" placeholder="e.g. Metal, Electrical & Gas Supply Solutions">
                     </div>
                 </div>
 
                 <div class="section-card" style="margin-bottom:16px; padding:12px;">
-                    <h4 style="margin-bottom:8px; font-size:14px; color:var(--text-primary);">প্রাপকের তথ্য (Recipient Information)</h4>
+                    <h4 style="margin-bottom:8px; font-size:14px; color:var(--text-primary);">Recipient / Client Details</h4>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="doc-recipient-name">প্রাপকের নাম / পদবি</label>
-                            <input type="text" id="doc-recipient-name" placeholder="যেমন: জনাব মোঃ আশিকুর রহমান">
+                            <label for="doc-recipient-name">Attention / Contact Person</label>
+                            <input type="text" id="doc-recipient-name" placeholder="e.g. Mr. M. A. Karim (Project Director)">
                         </div>
                         <div class="form-group">
-                            <label for="doc-recipient-org">কোম্পানি / প্রতিষ্ঠান</label>
-                            <input type="text" id="doc-recipient-org" placeholder="যেমন: মেসার্স বেঙ্গল স্টিল লিমিটেড">
+                            <label for="doc-recipient-org">Company / Organization</label>
+                            <input type="text" id="doc-recipient-org" placeholder="e.g. Meghna Textile & Steel Ltd.">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="doc-recipient-address">ঠিকানা</label>
-                            <input type="text" id="doc-recipient-address" placeholder="যেমন: প্লট নং ১২, ডিআইটি রোড, ঢাকা">
+                            <label for="doc-recipient-address">Address</label>
+                            <input type="text" id="doc-recipient-address" placeholder="e.g. Plot 42, CEPZ Industrial Area, Chattogram">
                         </div>
                         <div class="form-group">
-                            <label for="doc-recipient-phone">মোবাইল / ইমেইল</label>
-                            <input type="text" id="doc-recipient-phone" placeholder="যেমন: ০১৭১১-XXXXXX">
+                            <label for="doc-recipient-phone">Phone / Mobile / Email</label>
+                            <input type="text" id="doc-recipient-phone" placeholder="e.g. +880 1711 234567 / info@client.com">
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="doc-subject">বিষয় (Subject)</label>
-                    <input type="text" id="doc-subject" placeholder="যেমন: কারখানা আধুনিকায়ন কাজের জন্য মেটাল ও ইলেকট্রিক সামগ্রী সরবরাহ">
+                    <label for="doc-subject">Subject</label>
+                    <input type="text" id="doc-subject" placeholder="e.g. Quotation for Supply of Industrial Metal & Gas Equipment">
                 </div>
 
                 <div class="form-group">
-                    <label for="doc-body">মূল বক্তব্য / চিঠির অংশ (Body Description)</label>
-                    <textarea id="doc-body" rows="4" placeholder="চিঠির বিস্তারিত বক্তব্য বা দরপত্রের প্রাথমিক বিবরণ এখানে লিখুন..."></textarea>
+                    <label for="doc-body">Body / Description</label>
+                    <textarea id="doc-body" rows="4" placeholder="Dear Sir,&#10;With reference to your inquiry, we are pleased to submit our best competitive quotation with detailed specifications below..."></textarea>
                 </div>
 
                 <!-- Line Items Section -->
                 <div class="section-card" style="margin-bottom:16px; padding:12px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <h4 style="margin:0; font-size:14px; color:var(--text-primary);">আইটেম / পণ্য তালিকা (Line Items)</h4>
-                        <button type="button" class="btn btn-sm btn-outline" id="btn-add-doc-item">+ আইটেম যোগ করুন</button>
+                        <h4 style="margin:0; font-size:14px; color:var(--text-primary);">Products & Services (Line Items)</h4>
+                        <button type="button" class="btn btn-sm btn-outline" id="btn-add-doc-item">+ Add Item</button>
                     </div>
                     
                     <div id="doc-items-container" class="doc-items-table-wrapper">
@@ -264,55 +264,55 @@
                     </div>
 
                     <div class="doc-totals-summary" style="margin-top:12px; display:flex; justify-content:flex-end;">
-                        <div style="width:260px;">
+                        <div style="width:280px;">
                             <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px;">
-                                <span>উপ-মোট (Subtotal):</span>
-                                <strong id="doc-calc-subtotal">০.০০ BDT</strong>
+                                <span>Subtotal:</span>
+                                <strong id="doc-calc-subtotal">0.00 BDT</strong>
                             </div>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:13px;">
-                                <span>ছাড় (Discount BDT):</span>
-                                <input type="number" id="doc-discount" min="0" value="0" style="width:100px; padding:4px 8px; font-size:13px; text-align:right;">
+                                <span>Discount (BDT):</span>
+                                <input type="number" id="doc-discount" min="0" value="0" style="width:110px; padding:4px 8px; font-size:13px; text-align:right;">
                             </div>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:13px;">
-                                <span>ভ্যাট/ট্যাক্স (VAT BDT):</span>
-                                <input type="number" id="doc-vat" min="0" value="0" style="width:100px; padding:4px 8px; font-size:13px; text-align:right;">
+                                <span>VAT / Tax (BDT):</span>
+                                <input type="number" id="doc-vat" min="0" value="0" style="width:110px; padding:4px 8px; font-size:13px; text-align:right;">
                             </div>
                             <div style="display:flex; justify-content:space-between; padding-top:6px; border-top:1px solid var(--border); font-size:14px; color:var(--primary); font-weight:bold;">
-                                <span>সর্বমোট (Grand Total):</span>
-                                <span id="doc-calc-grand-total">০.০০ BDT</span>
+                                <span>Grand Total:</span>
+                                <span id="doc-calc-grand-total">0.00 BDT</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="doc-notes">শর্তাবলী / বিশেষ নোট (Terms & Conditions)</label>
-                    <textarea id="doc-notes" rows="3" placeholder="১. দরপত্রের মেয়াদ ৩০ দিন বলবৎ থাকবে।&#10;২. মালামাল সাইটে পৌঁছানোর পরিবহন খরচ কোম্পানির।"></textarea>
+                    <label for="doc-notes">Terms & Conditions</label>
+                    <textarea id="doc-notes" rows="3" placeholder="1. Validity: This quotation is valid for 30 days from issuance date.&#10;2. Delivery: Within 15 working days upon receipt of formal work order.&#10;3. Payment Terms: 50% advance with work order, remaining 50% upon delivery."></textarea>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="doc-prepared-by">প্রস্তুতকারক (Prepared By)</label>
-                        <input type="text" id="doc-prepared-by" placeholder="যেমন: ইঞ্জিনিয়ার মোঃ মারজান">
+                        <label for="doc-prepared-by">Prepared By</label>
+                        <input type="text" id="doc-prepared-by" placeholder="e.g. Engr. Marjan (Sales & Project)">
                     </div>
                     <div class="form-group">
-                        <label for="doc-authorized-by">অনুমোদনকারী (Authorized Signatory)</label>
-                        <input type="text" id="doc-authorized-by" placeholder="যেমন: ব্যবস্থাপনা পরিচালক, US BENGOL">
+                        <label for="doc-authorized-by">Authorized Signatory</label>
+                        <input type="text" id="doc-authorized-by" placeholder="e.g. Managing Director, US BENGOL">
                     </div>
                 </div>
 
                 <div class="form-actions" style="margin-top:20px; display:flex; gap:10px; justify-content:flex-end;">
-                    <button type="button" class="btn btn-outline" onclick="UI.closeModal('modal-doc-builder')">বাতিল</button>
+                    <button type="button" class="btn btn-outline" onclick="UI.closeModal('modal-doc-builder')">Cancel</button>
                     <button type="button" class="btn btn-outline" id="btn-preview-doc">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                        লাইভ প্রিভিউ
+                        Live Preview
                     </button>
                     <button type="button" class="btn btn-primary" id="btn-download-doc-direct">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        PDF ডাউনলোড
+                        Download PDF
                     </button>
-                    <button type="submit" class="btn btn-primary">
-                        সংরক্ষণ করুন
+                    <button type="submit" class="btn btn-primary" style="background:#008852; border-color:#008852;">
+                        Save Document
                     </button>
                 </div>
             </form>
@@ -323,11 +323,11 @@
     <div id="modal-doc-preview" class="modal-overlay" style="display:none;">
         <div class="modal-content modal-xl">
             <div class="modal-header">
-                <h3>ইউএস বেঙ্গল মূল প্যাডে প্রিভিউ (US BENGOL Letterhead)</h3>
+                <h3>Official US BENGOL Letterhead Live Preview</h3>
                 <div style="display:flex; gap:10px; align-items:center;">
-                    <button class="btn btn-sm btn-primary" id="btn-download-from-preview">
+                    <button class="btn btn-sm btn-primary" id="btn-download-from-preview" style="background:#008852; border-color:#008852;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        PDF ডাউনলোড করুন
+                        Download PDF
                     </button>
                     <button class="modal-close" onclick="UI.closeModal('modal-doc-preview')">&times;</button>
                 </div>
@@ -379,13 +379,13 @@
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                         </div>
                         <div>
-                            <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--text-primary);">কোটেশন ও প্যাড জেনারেটর</h3>
-                            <span style="font-size: 12px; color: var(--text-secondary);">US BENGOL মূল লেটারহেডে কোটেশন, বিল ও চিঠি তৈরি করে PDF ডাউনলোড করুন</span>
+                            <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--text-primary);">Quotation & Letterhead Generator</h3>
+                            <span style="font-size: 12px; color: var(--text-secondary);">Create Quotations, Invoices & Letters on original US BENGOL Letterhead</span>
                         </div>
                     </div>
                     <button type="button" class="btn btn-sm btn-primary" onclick="App.navigateTo('quotation')" style="background:#008852; border-color:#008852; font-weight:600; padding:8px 18px;">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        কোটেশন তৈরি করুন
+                        Create Quotation
                     </button>
                 </div>
                 <div class="section-card">
@@ -502,13 +502,13 @@
             <div class="page-content">
                 <div class="page-title-bar">
                     <div>
-                        <h2>কোটেশন ও প্যাড জেনারেটর</h2>
-                        <span style="font-size:12px; color:var(--text-secondary);">US BENGOL মূল লেটারহেডে কোটেশন, বিল ও অফিসিয়াল চিঠি তৈরি করুন</span>
+                        <h2>Quotation & Letterhead Generator</h2>
+                        <span style="font-size:12px; color:var(--text-secondary);">Create official Quotations, Invoices & Letters on original US BENGOL Letterhead</span>
                     </div>
                     <div style="display:flex; gap:8px;">
                         <button class="btn btn-sm btn-outline" id="btn-pq-new" type="button">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                            নতুন তৈরি করুন
+                            New Quotation
                         </button>
                     </div>
                 </div>
@@ -524,18 +524,18 @@
                                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                             </div>
                             <div>
-                                <h3 style="margin:0; font-size:16px; font-weight:700;">ডকুমেন্টের তথ্য ও বিবরণ</h3>
-                                <span style="font-size:11px; color:var(--text-secondary);">তথ্য দিয়ে নিচে "PDF জেনারেট ও সেভ করুন" বোতামে ক্লিক করুন</span>
+                                <h3 style="margin:0; font-size:16px; font-weight:700;">Document Details</h3>
+                                <span style="font-size:11px; color:var(--text-secondary);">Fill in the details below and click "Generate & Save PDF"</span>
                             </div>
                         </div>
                         <div style="display:flex; gap:8px;">
                             <button type="button" class="btn btn-sm btn-outline" id="btn-pq-preview-top">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                লাইভ প্রিভিউ
+                                Live Preview
                             </button>
                             <button type="submit" class="btn btn-sm btn-primary" style="background:#008852; border-color:#008852;">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                                PDF জেনারেট ও সেভ
+                                Generate & Save PDF
                             </button>
                         </div>
                     </div>
@@ -543,20 +543,20 @@
                     <!-- Row 1: Document Type, Ref No, Date -->
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="pq-doc-type">ডকুমেন্টের ধরন *</label>
+                            <label for="pq-doc-type">Document Type *</label>
                             <select id="pq-doc-type" required>
-                                <option value="quotation">বাণিজ্যিক দরপত্র (Quotation)</option>
-                                <option value="invoice">বিল / ইনভয়েস (Invoice)</option>
-                                <option value="letter">অফিসিয়াল প্যাড চিঠি (Official Letter)</option>
-                                <option value="notice">অফিসিয়াল নোটিশ (Notice)</option>
+                                <option value="quotation" selected>Commercial Quotation</option>
+                                <option value="invoice">Official Invoice / Bill</option>
+                                <option value="letter">Official Company Letter</option>
+                                <option value="notice">Official Notice</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="pq-doc-ref">স্মারক / রেফারেন্স নং *</label>
+                            <label for="pq-doc-ref">Reference No (Ref No) *</label>
                             <input type="text" id="pq-doc-ref" required placeholder="UB/QT/2026/001">
                         </div>
                         <div class="form-group">
-                            <label for="pq-doc-date">তারিখ *</label>
+                            <label for="pq-doc-date">Date (Auto-filled, Editable) *</label>
                             <input type="date" id="pq-doc-date" required>
                         </div>
                     </div>
@@ -564,12 +564,12 @@
                     <!-- Row 2: Title & Subtitle -->
                     <div class="form-row">
                         <div class="form-group" style="flex:2;">
-                            <label for="pq-doc-title">শিরোনাম (Document Title) *</label>
-                            <input type="text" id="pq-doc-title" required placeholder="COMMERCIAL QUOTATION / বাণিজ্যিক দরপত্র">
+                            <label for="pq-doc-title">Document Title *</label>
+                            <input type="text" id="pq-doc-title" required value="COMMERCIAL QUOTATION" placeholder="COMMERCIAL QUOTATION">
                         </div>
                         <div class="form-group" style="flex:1;">
-                            <label for="pq-doc-subtitle">উপ-শিরোনাম (Subtitle)</label>
-                            <input type="text" id="pq-doc-subtitle" placeholder="Metal, Electrical & Gas Supply Solutions">
+                            <label for="pq-doc-subtitle">Subtitle / Tagline</label>
+                            <input type="text" id="pq-doc-subtitle" value="Metal, Electrical & Gas Supply Solutions" placeholder="Metal, Electrical & Gas Supply Solutions">
                         </div>
                     </div>
 
@@ -577,85 +577,125 @@
                     <div style="background:var(--bg-tertiary); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px; margin-bottom:16px;">
                         <div style="font-weight:700; font-size:13px; margin-bottom:10px; color:var(--text-primary); display:flex; align-items:center; gap:6px;">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                            প্রাপকের তথ্য (Recipient / Customer Details)
+                            Recipient / Client Details
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="pq-recipient-name">প্রাপকের নাম / পদবি</label>
-                                <input type="text" id="pq-recipient-name" placeholder="যেমন: জনাব মোহাম্মদ মোস্তফা কামাল (প্রজেক্ট ডিরেক্টর)">
+                                <label for="pq-recipient-name">Attention / Contact Person</label>
+                                <input type="text" id="pq-recipient-name" placeholder="e.g. Mr. M. A. Karim (Project Director)">
                             </div>
                             <div class="form-group">
-                                <label for="pq-recipient-org">কোম্পানি / প্রতিষ্ঠান</label>
-                                <input type="text" id="pq-recipient-org" placeholder="যেমন: মেঘনা টেক্সটাইল অ্যান্ড স্টিল লিমিটেড">
+                                <label for="pq-recipient-org">Company / Organization</label>
+                                <input type="text" id="pq-recipient-org" placeholder="e.g. Meghna Textile & Steel Ltd.">
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="pq-recipient-address">ঠিকানা</label>
-                                <input type="text" id="pq-recipient-address" placeholder="যেমন: প্লট ৪২, সিইপিজেড শিল্প এলাকা, চট্টগ্রাম">
+                                <label for="pq-recipient-address">Address</label>
+                                <input type="text" id="pq-recipient-address" placeholder="e.g. Plot 42, CEPZ Industrial Area, Chattogram">
                             </div>
                             <div class="form-group">
-                                <label for="pq-recipient-phone">মোবাইল নম্বর / ইমেইল</label>
-                                <input type="text" id="pq-recipient-phone" placeholder="যেমন: +৮৮০ ১৭১১ ২৩৪৫৬৭">
+                                <label for="pq-recipient-phone">Phone / Mobile / Email</label>
+                                <input type="text" id="pq-recipient-phone" placeholder="e.g. +880 1711 234567 / info@client.com">
                             </div>
                         </div>
                     </div>
 
                     <!-- Subject & Body Description -->
                     <div class="form-group">
-                        <label for="pq-doc-subject">বিষয় (Subject)</label>
-                        <input type="text" id="pq-doc-subject" placeholder="যেমন: কারখানা আধুনিকায়ন প্রকল্পের জন্য মেটাল ও ইলেকট্রিক সামগ্রী সরবরাহ দরপত্র">
+                        <label for="pq-doc-subject">Subject</label>
+                        <input type="text" id="pq-doc-subject" placeholder="e.g. Quotation for Supply of Industrial Metal, Gas & Electrical Materials">
                     </div>
 
                     <div class="form-group">
-                        <label for="pq-doc-body">মূল বক্তব্য / চিঠির অংশ (Body Description)</label>
-                        <textarea id="pq-doc-body" rows="3" placeholder="সম্মানিত মহোদয়, আপনার চাহিদামাফিক মালামালের বিস্তারিত বিবরণ এবং সর্বনিম্ন মূল্যতালিকা নিচে উপস্থাপন করছি..."></textarea>
+                        <label for="pq-doc-body">Body / Letter Description</label>
+                        <textarea id="pq-doc-body" rows="3" placeholder="Dear Sir,&#10;With reference to your inquiry, we are pleased to submit our best competitive quotation with detailed specifications and lowest prices below for your kind consideration..."></textarea>
                     </div>
 
                     <!-- Line Items Table Section -->
                     <div style="background:var(--card-bg); border:1.5px solid var(--border); border-radius:var(--radius-md); padding:16px; margin-bottom:16px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                             <div>
-                                <h4 style="margin:0; font-size:14px; font-weight:700;">পণ্য ও সেবা তালিকা (Line Items)</h4>
-                                <span style="font-size:11px; color:var(--text-secondary);">পণ্যের বিবরণ, পরিমাণ ও দর দিলে মোট স্বয়ংক্রিয়ভাবে হিসাব হবে</span>
+                                <h4 style="margin:0; font-size:14px; font-weight:700;">Products & Services (Line Items)</h4>
+                                <span style="font-size:11px; color:var(--text-secondary);">Enter item description, quantity, unit, and unit price. Totals calculate automatically.</span>
                             </div>
                             <button type="button" class="btn btn-sm btn-outline" id="btn-pq-add-item">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                + আইটেম যোগ করুন
+                                + Add Item
                             </button>
                         </div>
 
-                        <div class="pq-items-header" style="display:grid; grid-template-columns: 2fr 75px 65px 95px 105px 36px; gap:6px; padding:6px 8px; font-size:11px; font-weight:700; color:var(--text-secondary); background:var(--bg-secondary); border-radius:4px; margin-bottom:6px;">
-                            <span>বিবরণ (Description) *</span>
-                            <span style="text-align:center;">পরিমাণ *</span>
-                            <span style="text-align:center;">একক</span>
-                            <span style="text-align:right;">দর (BDT) *</span>
-                            <span style="text-align:right;">মোট (BDT)</span>
+                        <div class="pq-items-header">
+                            <span>Item Description *</span>
+                            <span style="text-align:center;">Qty *</span>
+                            <span style="text-align:center;">Unit</span>
+                            <span style="text-align:right;">Unit Price (BDT) *</span>
+                            <span style="text-align:right;">Total (BDT)</span>
                             <span></span>
                         </div>
 
                         <div id="pq-items-container" class="doc-items-table-wrapper">
-                            <!-- Dynamic items injected here -->
+                            <!-- Pre-rendered editable rows for instant typing -->
+                            <div class="pq-item-row">
+                                <div class="pq-col-desc">
+                                    <input type="text" class="pq-item-desc" placeholder="Item description / specification *" value="High Pressure Gas Regulator Valve (Model: G-204)" autocomplete="off">
+                                </div>
+                                <div class="pq-col-qty">
+                                    <input type="number" class="pq-item-qty" placeholder="Qty" value="5" min="0" step="any">
+                                </div>
+                                <div class="pq-col-unit">
+                                    <input type="text" class="pq-item-unit" placeholder="Unit" value="Pcs">
+                                </div>
+                                <div class="pq-col-rate">
+                                    <input type="number" class="pq-item-rate" placeholder="Rate" value="4500" min="0" step="any">
+                                </div>
+                                <div class="pq-col-total">
+                                    <span class="pq-item-total-display">22,500.00</span>
+                                </div>
+                                <div class="pq-col-action">
+                                    <button type="button" class="btn-remove-pq-row" title="Remove Item">&times;</button>
+                                </div>
+                            </div>
+                            <div class="pq-item-row">
+                                <div class="pq-col-desc">
+                                    <input type="text" class="pq-item-desc" placeholder="Item description / specification *" value="Heavy-Duty Copper Cable (3Core 16sqmm - 100m Roll)" autocomplete="off">
+                                </div>
+                                <div class="pq-col-qty">
+                                    <input type="number" class="pq-item-qty" placeholder="Qty" value="8" min="0" step="any">
+                                </div>
+                                <div class="pq-col-unit">
+                                    <input type="text" class="pq-item-unit" placeholder="Unit" value="Rolls">
+                                </div>
+                                <div class="pq-col-rate">
+                                    <input type="number" class="pq-item-rate" placeholder="Rate" value="18500" min="0" step="any">
+                                </div>
+                                <div class="pq-col-total">
+                                    <span class="pq-item-total-display">148,000.00</span>
+                                </div>
+                                <div class="pq-col-action">
+                                    <button type="button" class="btn-remove-pq-row" title="Remove Item">&times;</button>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Subtotal, Discount, VAT, Grand Total -->
                         <div style="display:flex; justify-content:flex-end; margin-top:14px;">
-                            <div style="width:300px; background:var(--bg-secondary); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px;">
+                            <div style="width:310px; background:var(--bg-secondary); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px;">
                                 <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;">
-                                    <span>উপ-মোট (Subtotal):</span>
-                                    <strong id="pq-calc-subtotal">০.০০ BDT</strong>
+                                    <span>Subtotal:</span>
+                                    <strong id="pq-calc-subtotal">170,500.00 BDT</strong>
                                 </div>
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px;">
-                                    <span>ছাড় / ডিসকাউন্ট (BDT):</span>
+                                    <span>Discount (BDT):</span>
                                     <input type="number" id="pq-discount" min="0" value="0" style="width:110px; padding:4px 8px; font-size:13px; text-align:right;">
                                 </div>
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px;">
-                                    <span>ভ্যাট / ট্যাক্স (BDT):</span>
+                                    <span>VAT / Tax (BDT):</span>
                                     <input type="number" id="pq-vat" min="0" value="0" style="width:110px; padding:4px 8px; font-size:13px; text-align:right;">
                                 </div>
                                 <div style="display:flex; justify-content:space-between; padding-top:8px; border-top:2px solid #008852; font-size:15px; color:#1b365d; font-weight:800;">
-                                    <span>সর্বমোট (Grand Total):</span>
-                                    <span id="pq-calc-grand-total">০.০০ BDT</span>
+                                    <span>Grand Total:</span>
+                                    <span id="pq-calc-grand-total">170,500.00 BDT</span>
                                 </div>
                             </div>
                         </div>
@@ -663,37 +703,37 @@
 
                     <!-- Terms & Conditions -->
                     <div class="form-group">
-                        <label for="pq-doc-notes">শর্তাবলী / বিশেষ নিয়ম (Terms & Conditions)</label>
-                        <textarea id="pq-doc-notes" rows="3" placeholder="১. এই দরপত্রের মেয়াদ ইস্যু তারিখ হতে ৩০ দিন পর্যন্ত বলবৎ থাকবে।&#10;২. মালামাল সাইটে পৌঁছানোর পরিবহন খরচ কোম্পানি বহন করবে।&#10;৩. কার্যাদেশ প্রাপ্তির ১৫ কার্যদিবসের মধ্যে সরবরাহ সম্পন্ন হবে।&#10;৪. পরিশোধের শর্তাবলী: ৫০% অগ্রিম এবং অবশিষ্ট ৫০% মালামাল বুঝে পাওয়ার পর চেক মারফত।"></textarea>
+                        <label for="pq-doc-notes">Terms & Conditions</label>
+                        <textarea id="pq-doc-notes" rows="4" placeholder="1. Validity: This quotation is valid for 30 days from issuance date.&#10;2. Delivery: Within 15 working days upon receipt of formal work order.&#10;3. Transportation: Delivery to project site will be arranged by the company.&#10;4. Payment Terms: 50% advance with work order, remaining 50% upon delivery of goods."></textarea>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="pq-prepared-by">প্রস্তুতকারক (Prepared By)</label>
-                            <input type="text" id="pq-prepared-by" placeholder="ইঞ্জিনিয়ার মারজান (বিক্রয় ও প্রকল্প)">
+                            <label for="pq-prepared-by">Prepared By</label>
+                            <input type="text" id="pq-prepared-by" value="Engr. Marjan (Sales & Project)" placeholder="Engr. Marjan (Sales & Project)">
                         </div>
                         <div class="form-group">
-                            <label for="pq-authorized-by">অনুমোদনকারী (Authorized Signatory)</label>
-                            <input type="text" id="pq-authorized-by" placeholder="ব্যবস্থাপনা পরিচালক, US BENGOL">
+                            <label for="pq-authorized-by">Authorized Signatory</label>
+                            <input type="text" id="pq-authorized-by" value="Managing Director, US BENGOL" placeholder="Managing Director, US BENGOL">
                         </div>
                     </div>
 
                     <!-- Action Buttons at bottom of form -->
                     <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; padding-top:16px; border-top:1px solid var(--border-light); flex-wrap:wrap;">
                         <button type="button" class="btn btn-outline" id="btn-pq-reset">
-                            রিসেট
+                            Reset Form
                         </button>
                         <button type="button" class="btn btn-outline" id="btn-pq-save-only">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                            খসড়া সেভ করুন
+                            Save Draft
                         </button>
                         <button type="button" class="btn btn-outline" id="btn-pq-preview-bottom">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                            লাইভ প্রিভিউ
+                            Live Preview
                         </button>
                         <button type="submit" class="btn btn-primary" style="background:#008852; border-color:#008852; padding:10px 22px; font-weight:700; font-size:14px;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                            PDF জেনারেট ও সেভ করুন
+                            Generate & Save PDF
                         </button>
                     </div>
                 </form>
@@ -702,8 +742,8 @@
                 <div class="section-card">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
                         <div>
-                            <h3 class="section-title" style="margin:0;">সংরক্ষিত কোটেশন ও প্যাডসমূহ</h3>
-                            <span style="font-size:12px; color:var(--text-secondary);">পূর্বে তৈরি করা কোটেশন ও ডকুমেন্টসমূহ</span>
+                            <h3 class="section-title" style="margin:0;">Saved Quotations & Documents</h3>
+                            <span style="font-size:12px; color:var(--text-secondary);">Previously created quotations and official company documents</span>
                         </div>
                     </div>
                     <div id="pq-saved-list-container">
@@ -925,7 +965,7 @@
         </button>
         <button class="nav-item" data-page="quotation">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            <span>কোটেশন</span>
+            <span>Quotation</span>
         </button>
         <button class="nav-item" data-page="report">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
